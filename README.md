@@ -22,7 +22,7 @@ npm run build
 npm run preview -- --host 127.0.0.1
 ```
 
-`npm run build` runs Astro's content/type checks before generating the static
+`npm run build` runs Astro's content and type checks before generating the static
 site in `dist/`.
 
 ## Deploy with GitHub Pages
