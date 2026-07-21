@@ -1,0 +1,101 @@
+---
+title: Complete the onboarding exercise
+description: Set up, implement, build, test, and benchmark the UWHPC onboarding template.
+sidebar:
+  order: 2
+---
+
+Work from your copy of the
+[UWHPC onboarding template](https://github.com/UWHPC/UWHPC-Onboarding-Template).
+Read its problem statement completely before implementing either component.
+
+:::caution[Keep the implementation yours]
+Do not search for, copy, request, or publish completed implementations. This
+page describes the required workflow only; it deliberately provides no
+algorithm, data-layout recommendation, optimization advice, or solution code.
+:::
+
+## Requirements
+
+The checked-in build configuration requires:
+
+- CMake 3.21 or newer
+- Ninja
+- A compiler with C++17 support
+
+You may use C++17 or later standard-library facilities in the submitted
+components. The harness itself requests C++17.
+
+:::caution[TODO — supported onboarding environment]
+Missing from the repositories: supported operating systems, approved compiler
+and Ninja versions, whether a prepared development environment is available,
+and whom to contact for setup problems.
+:::
+
+## Permitted edit scope
+
+Edit only:
+
+- `src/grid.hpp`
+- `src/stencil.cpp`
+
+Do not edit the benchmark harness, `CMakeLists.txt`, or `CMakePresets.json`.
+The evaluator depends on the supplied interfaces and harness behavior.
+
+Within the two permitted files, preserve the required `Grid` constructor,
+dimension accessors, and mutable and read-only element access. The full contract
+is stated in the supplied PDF and template README.
+
+## Configure and build
+
+Run these commands from the template repository root:
+
+```bash
+cmake --preset benchmark
+cmake --build --preset benchmark
+```
+
+The first command configures a Release build with the template's `benchmark`
+preset. The second builds the supplied benchmark target together with your two
+components.
+
+## Run the correctness test
+
+```bash
+ctest --preset benchmark --output-on-failure
+```
+
+Do not treat a successful compilation as completion. The correctness test must
+pass before submission.
+
+## Run the benchmark
+
+```bash
+./build/benchmark/uwhpc_benchmark
+```
+
+The benchmark prints a machine-readable summary containing runtime, memory, and
+score fields. A higher score represents a faster run relative to the harness's
+reference time. Local results can vary by machine; the submitted result is
+evaluated on team infrastructure.
+
+## Completion checklist
+
+- [ ] Only the two permitted source files were changed.
+- [ ] The required `Grid` interface is preserved.
+- [ ] Grid values are zero-initialized as required by the problem statement.
+- [ ] Interior values follow the specified five-point update.
+- [ ] Boundary values remain unchanged.
+- [ ] The preset build completes.
+- [ ] The correctness test passes.
+- [ ] The benchmark completes and emits its summary.
+- [ ] You can explain your design decisions in your own words.
+
+## Source of truth
+
+The file scope, requirements, commands, and benchmark interpretation come from
+the
+[template README](https://github.com/UWHPC/UWHPC-Onboarding-Template/blob/main/README.md),
+[`CMakeLists.txt`](https://github.com/UWHPC/UWHPC-Onboarding-Template/blob/main/CMakeLists.txt),
+and
+[`CMakePresets.json`](https://github.com/UWHPC/UWHPC-Onboarding-Template/blob/main/CMakePresets.json).

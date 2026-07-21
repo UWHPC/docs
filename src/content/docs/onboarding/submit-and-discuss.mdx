@@ -1,0 +1,77 @@
+---
+title: Submit and discuss your work
+description: Submit the onboarding exercise and prepare to explain your design decisions.
+sidebar:
+  order: 3
+---
+
+Submit only after the provided build, correctness test, and benchmark complete
+in your working copy.
+
+## Before you push
+
+- Confirm that only `src/grid.hpp` and `src/stencil.cpp` contain your changes.
+- Confirm that the code is your own work.
+- Remove temporary diagnostics, generated files, and local benchmark artifacts
+  from the proposed change.
+- Run the preset build and correctness test one final time.
+- Review the change so you can explain every design decision.
+
+## Automated evaluation
+
+Push your changes to the repository or fork supplied for your onboarding task.
+The template's GitHub Action sends the committed version to the UWHPC evaluator
+and reports the result as a commit check.
+
+The public participant instructions do not require you to configure evaluator
+credentials or modify the workflow. If the evaluation check is absent or fails
+for infrastructure reasons, do not alter the harness to bypass it.
+
+:::caution[TODO — official submission procedure]
+Missing from the repositories: where to send the repository link, whether a
+specific branch or commit is required, submission deadlines, expected evaluator
+turnaround, how candidates can distinguish an infrastructure failure from a
+code failure, and the official support contact.
+:::
+
+## Evaluation criteria
+
+The review considers:
+
+- Whether the implementation is correct
+- The quality and clarity of the implementation
+- The reasoning behind design decisions
+- Performance on the team benchmark machine
+
+Correctness is required but is not the only consideration. The problem
+statement says applications are reviewed holistically and are not advanced on
+benchmark score alone.
+
+## Design discussion
+
+After submission, candidates may be invited to a short virtual chat about their
+work. Prepare to explain:
+
+- How you interpreted the requirements
+- The design choices you made
+- How you verified correctness
+- How you evaluated the result
+- What tradeoffs you considered
+
+This is a discussion of your own reasoning, not a request for a particular
+implementation.
+
+## Use of AI
+
+The problem statement permits using AI to learn and explore ideas, but the
+submitted implementation must remain your own work. Do not paste generated or
+third-party solution code into the submission. You should be able to explain
+and defend everything you submit during the discussion.
+
+## Source of truth
+
+The submission flow, review dimensions, design discussion, and AI guidance come
+from the
+[template README](https://github.com/UWHPC/UWHPC-Onboarding-Template/blob/main/README.md)
+and the
+[onboarding problem statement](https://github.com/UWHPC/UWHPC-Onboarding-Template/blob/main/docs/UWHPC_Onboarding.pdf).

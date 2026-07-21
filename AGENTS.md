@@ -11,6 +11,8 @@ The current documentation covers:
 
 - Variational Monte Carlo (VMC) build, testing, profiling, CLI, and architecture.
 - C++ and CUDA coding standards derived from concrete VMC examples.
+- The UWHPC C++ onboarding exercise, validation workflow, submission, and design
+  discussion.
 - An expert-review checklist for statements that cannot be established from
   source code alone.
 
@@ -22,8 +24,13 @@ The current documentation covers:
 - Treat `UWHPC-Site/` as a read-only visual-design reference. Reuse its palette,
   typography, logo, and favicon through the documentation site's own source
   files; do not modify the reference checkout.
-- Both reference checkouts are excluded from the documentation TypeScript scope
-  and Git payload. Do not remove those exclusions.
+- Treat `UWHPC-Onboarding/` and `UWHPC-Onboarding-Template/` as read-only
+  onboarding references. The template is the participant-facing source; the
+  other repository contains internal solution material that must not be
+  published.
+- Treat `cpp-standards/` as a read-only reference checkout when it is present.
+- Reference checkouts are excluded from the documentation TypeScript scope and
+  Git payload. Do not remove those exclusions.
 - Documentation source lives under `src/content/docs/`.
 - Shared components and styling live under `src/components/`, `src/assets/`, and
   `src/styles/`.
@@ -49,6 +56,29 @@ The current documentation covers:
 - Represent missing operational or domain information with a clearly labeled
   TODO block that says exactly what must be supplied.
 
+## Onboarding documentation
+
+- Keep participant onboarding documentation under
+  `src/content/docs/onboarding/` and keep it separate from VMC and the C++/CUDA
+  standards.
+- Base participant instructions on `UWHPC-Onboarding-Template/README.md`,
+  `UWHPC-Onboarding-Template/docs/UWHPC_Onboarding.pdf`, and the template's
+  public build configuration.
+- Do not reproduce, summarize, adapt, or hint at any implementation from a
+  solution directory or completed solution file.
+- Do not publish links to solution directories or files.
+- Do not include optimized data layouts, completed kernels, algorithmic hints,
+  reference implementations, benchmark tactics, or solution-derived
+  performance numbers.
+- It is acceptable to document the public task contract, permitted edit scope,
+  prerequisites, build/test/benchmark commands, evaluation criteria,
+  submission flow, design discussion, and AI-use policy.
+- Preserve the prominent warning that submissions must be the participant's own
+  work.
+- Use explicit TODO blocks for assignment delivery, submission destination,
+  deadlines, evaluator support, and contact information until an authoritative
+  source supplies them.
+
 ## Interpretation and expert review
 
 - Tag a sentence with **`[general-VMC-knowledge]`** when it relies on general
@@ -64,6 +94,7 @@ The current documentation covers:
 ## Section boundaries
 
 - Keep VMC user documentation under `src/content/docs/software/vmc/`.
+- Keep onboarding documentation under `src/content/docs/onboarding/`.
 - Keep organization-level C++ and CUDA guidance under
   `src/content/docs/cpp-standards/`; do not nest it inside VMC.
 - The coding standards are an initial normative standard derived from VMC, not

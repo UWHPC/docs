@@ -1,4 +1,11 @@
 {
   "extends": "astro/tsconfigs/strict",
-  "exclude": ["Variational-Monte-Carlo", "UWHPC-Site", "dist"]
+  "exclude": [
+    "Variational-Monte-Carlo",
+    "UWHPC-Site",
+    "UWHPC-Onboarding",
+    "UWHPC-Onboarding-Template",
+    "cpp-standards",
+    "dist"
+  ]
 }

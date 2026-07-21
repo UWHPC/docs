@@ -1,0 +1,70 @@
+---
+title: UWHPC onboarding
+description: Start the UWHPC 2D heat-diffusion onboarding exercise.
+sidebar:
+  order: 1
+---
+
+The UWHPC onboarding exercise is a small C++ performance task built around a 2D
+heat-diffusion stencil. You implement two focused components, validate them with
+the supplied harness, submit your work for automated evaluation, and discuss
+your design in a short virtual chat.
+
+:::caution[Do not publish or reuse solutions]
+This documentation intentionally contains no solution code, implementation
+hints, optimized layouts, completed kernels, or links to solution files. Your
+submission must represent your own design and implementation.
+:::
+
+## What you implement
+
+You are responsible for:
+
+1. A `Grid` class that stores a two-dimensional field of `double` values and
+   preserves the interface required by the evaluation harness.
+2. The stencil operation that advances the interior grid points by one step and
+   leaves boundary values unchanged, following the supplied problem statement.
+
+The template supplies the time integration, boundary setup, initial conditions,
+input/output, correctness test, benchmark, and build configuration. The exercise
+does not require prior thermal-physics knowledge.
+
+Read the full
+[onboarding problem statement](https://github.com/UWHPC/UWHPC-Onboarding-Template/blob/main/docs/UWHPC_Onboarding.pdf)
+before editing the template.
+
+## Onboarding path
+
+1. Obtain your copy of the
+   [UWHPC onboarding template](https://github.com/UWHPC/UWHPC-Onboarding-Template).
+2. Review the problem statement and permitted edit scope.
+3. [Implement and validate the exercise](./complete-the-exercise/).
+4. [Submit the result and prepare for the design discussion](./submit-and-discuss/).
+
+## What the exercise evaluates
+
+The source problem statement lists four evaluation dimensions:
+
+- Correctness
+- Implementation quality
+- Design decisions
+- Performance
+
+Applications are reviewed holistically. A benchmark result is one input, not
+the sole advancement criterion.
+
+:::caution[TODO — assignment process]
+The repositories do not specify whether candidates should receive an assigned
+repository, fork the public template, or use another invitation flow. Add the
+official assignment link and responsible contact before presenting this page as
+a complete application procedure.
+:::
+
+## Source of truth
+
+Participant instructions come from the
+[template README](https://github.com/UWHPC/UWHPC-Onboarding-Template/blob/main/README.md)
+and the
+[problem statement](https://github.com/UWHPC/UWHPC-Onboarding-Template/blob/main/docs/UWHPC_Onboarding.pdf).
+If these docs disagree with the assigned template, stop and ask the onboarding
+contact rather than changing the harness.
