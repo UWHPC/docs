@@ -1,0 +1,256 @@
+:root,
+:root[data-theme='light'] {
+  color-scheme: dark;
+
+  /* UWHPC-Site design tokens. */
+  --uwhpc-bg: #111111;
+  --uwhpc-bg-raised: #181818;
+  --uwhpc-bg-panel: #1d1d1d;
+  --uwhpc-ink: #e8e8e8;
+  --uwhpc-ink-muted: #9a9a9a;
+  --uwhpc-ink-faint: #6b6b6b;
+  --uwhpc-accent: #cd393c;
+  --uwhpc-accent-bright: #e0494d;
+  --uwhpc-line: #272727;
+  --uwhpc-line-strong: #3d3d3d;
+
+  /* Map Starlight's semantic palette onto the UWHPC palette. */
+  --sl-color-white: var(--uwhpc-ink);
+  --sl-color-gray-1: #d5d5d5;
+  --sl-color-gray-2: #b6b6b6;
+  --sl-color-gray-3: var(--uwhpc-ink-muted);
+  --sl-color-gray-4: var(--uwhpc-ink-faint);
+  --sl-color-gray-5: var(--uwhpc-line-strong);
+  --sl-color-gray-6: var(--uwhpc-line);
+  --sl-color-gray-7: var(--uwhpc-bg-raised);
+  --sl-color-black: var(--uwhpc-bg);
+
+  --sl-color-accent-low: #3a1718;
+  --sl-color-accent: var(--uwhpc-accent);
+  --sl-color-accent-high: var(--uwhpc-accent-bright);
+  --sl-color-text: #c8c8c8;
+  --sl-color-text-accent: var(--uwhpc-accent-bright);
+  --sl-color-text-invert: #ffffff;
+  --sl-color-bg: var(--uwhpc-bg);
+  --sl-color-bg-nav: var(--uwhpc-bg);
+  --sl-color-bg-sidebar: var(--uwhpc-bg);
+  --sl-color-bg-inline-code: var(--uwhpc-bg-panel);
+  --sl-color-bg-accent: var(--uwhpc-accent);
+  --sl-color-hairline-light: var(--uwhpc-line-strong);
+  --sl-color-hairline: var(--uwhpc-line);
+  --sl-color-hairline-shade: var(--uwhpc-bg);
+  --sl-color-backdrop-overlay: rgb(17 17 17 / 0.8);
+
+  --sl-font: 'Archivo Variable';
+  --sl-font-mono: 'Fragment Mono';
+  --sl-nav-height: 4rem;
+  --sl-content-width: 50rem;
+  --sl-line-height: 1.72;
+}
+
+::selection {
+  background: rgb(205 57 60 / 0.35);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--uwhpc-bg);
+  color: var(--sl-color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The source UWHPC site is intentionally dark-only. */
+starlight-theme-select {
+  display: none;
+}
+
+header.header {
+  border-bottom: 1px solid var(--uwhpc-line);
+  background: rgb(17 17 17 / 0.92);
+  backdrop-filter: blur(12px);
+}
+
+.sidebar-pane {
+  border-inline-end-color: var(--uwhpc-line);
+  background: var(--uwhpc-bg);
+}
+
+.right-sidebar-panel {
+  border-inline-start-color: var(--uwhpc-line);
+}
+
+.sidebar-content .group-label,
+.right-sidebar-panel h2 {
+  color: var(--uwhpc-ink-faint);
+  font-family: 'Fragment Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.sidebar-content a[aria-current='page'] {
+  color: var(--uwhpc-ink);
+  background: var(--uwhpc-bg-raised);
+  box-shadow: inset 2px 0 0 var(--uwhpc-accent);
+}
+
+.sidebar-content a:hover,
+.right-sidebar-panel a:hover {
+  color: var(--uwhpc-accent-bright);
+}
+
+.sl-markdown-content h1,
+.sl-markdown-content h2,
+.sl-markdown-content h3,
+.hero h1 {
+  color: var(--uwhpc-ink);
+  font-stretch: expanded;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+}
+
+.sl-markdown-content h2 {
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--uwhpc-line);
+}
+
+.sl-markdown-content h2::before {
+  content: '//';
+  margin-inline-end: 0.55rem;
+  color: var(--uwhpc-accent);
+  font-family: 'Fragment Mono', monospace;
+  font-size: 0.65em;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.sl-markdown-content a:not(:where(.not-content *)) {
+  color: var(--uwhpc-accent-bright);
+  text-decoration-color: rgb(224 73 77 / 0.45);
+  text-underline-offset: 0.2em;
+}
+
+.sl-markdown-content a:not(:where(.not-content *)):hover {
+  text-decoration-color: currentColor;
+}
+
+.sl-markdown-content :not(pre) > code {
+  border: 1px solid var(--uwhpc-line);
+  border-radius: 0;
+  color: var(--uwhpc-ink);
+}
+
+.expressive-code,
+.expressive-code figure,
+.expressive-code pre,
+.sl-markdown-content table,
+.sl-markdown-content details,
+.starlight-aside,
+.card,
+.pagination-links a,
+.sl-link-button {
+  border-radius: 0 !important;
+}
+
+.expressive-code figure,
+.sl-markdown-content table,
+.sl-markdown-content details {
+  border-color: var(--uwhpc-line-strong) !important;
+}
+
+.sl-markdown-content th {
+  color: var(--uwhpc-ink-muted);
+  font-family: 'Fragment Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sl-markdown-content tr:hover td {
+  background: var(--uwhpc-bg-raised);
+}
+
+.starlight-aside {
+  border: 1px solid var(--uwhpc-line-strong);
+  border-inline-start: 3px solid var(--uwhpc-accent);
+  background: var(--uwhpc-bg-panel);
+}
+
+.starlight-aside--caution {
+  --sl-color-asides-text-accent: var(--uwhpc-accent-bright);
+  --sl-color-asides-border: var(--uwhpc-accent);
+}
+
+.starlight-aside__title {
+  font-family: 'Fragment Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.card {
+  border-color: var(--uwhpc-line) !important;
+  background: var(--uwhpc-bg-panel) !important;
+  transition: border-color 180ms ease, background-color 180ms ease;
+}
+
+.card:hover {
+  border-color: var(--uwhpc-line-strong) !important;
+  background: var(--uwhpc-bg-raised) !important;
+}
+
+.hero {
+  border-bottom: 1px solid var(--uwhpc-line);
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.022) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.022) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+.hero .tagline {
+  color: var(--uwhpc-ink-muted);
+  font-weight: 300;
+}
+
+.sl-link-button.primary {
+  border-color: var(--uwhpc-accent) !important;
+  background: var(--uwhpc-accent) !important;
+  color: #ffffff !important;
+  font-family: 'Fragment Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sl-link-button.primary:hover {
+  border-color: var(--uwhpc-accent-bright) !important;
+  background: var(--uwhpc-accent-bright) !important;
+}
+
+.pagination-links a {
+  border-color: var(--uwhpc-line) !important;
+  background: transparent;
+}
+
+.pagination-links a:hover {
+  border-color: var(--uwhpc-ink-muted) !important;
+  background: var(--uwhpc-bg-raised);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}

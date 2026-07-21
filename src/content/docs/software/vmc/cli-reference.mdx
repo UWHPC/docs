@@ -1,0 +1,179 @@
+---
+title: VMC command and file reference
+description: Invocation, configuration keys, terminal output, exit behavior, and generated files.
+sidebar:
+  order: 10
+---
+
+## Synopsis
+
+```text
+vmc
+```
+
+The current executable has no implemented command-line interface. `main()`
+receives `argc` and `argv` but marks both unused. Arguments are neither parsed
+nor rejected.
+
+:::caution[`--help` starts a simulation]
+Do not use `vmc --help` expecting a usage screen. It starts the same calculation
+as `vmc`.
+:::
+
+The command was tested directly:
+
+```bash
+./build/vmc --help
+```
+
+The beginning of the real output was:
+
+```text
+<--- Variational Monte Carlo Simulation --->
+
+<--- Optimizing Jastrow b parameter --->
+[Optimizer] r_s=15.00, N=485, scanning b in [0.07, 5.00] (16 points, 50+50 sweeps)
+  b=0.067  E=-28.150245
+  b=0.396  E=-16.306829
+  b=0.724  E=-15.516041
+  b=1.053  E=-15.186547
+  b=1.382  E=-15.451702
+  b=1.711  E=-14.977220
+  b=2.040  E=-15.138524
+  b=2.369  E=-15.261578
+  b=2.698  E=-15.425381
+  b=3.027  E=-15.315792
+  b=3.356  E=-14.996478
+  b=3.684  E=-14.995665
+  b=4.013  E=-14.904355
+  b=4.342  E=-15.102915
+  b=4.671  E=-14.968550
+  b=5.000  E=-15.315825
+[Optimizer] Boundary b=0.067 rejected (artifact), using interior best
+[Optimizer] Result: b=0.3955
+
+<--- Config Settings --->
+Number of threads: 8
+Number of particles: 485
+Number of warmup sweeps: 100
+Number of measure sweeps: 100
+Length of box: 190.0000
+Samples per block: 100
+Master seed: 123456
+Jastrow a: 0.2500
+Jastrow b: 0.3955 (optimized)
+
+Warning: could not open output/vmc.bin for writing
+```
+
+The program then emitted in-place progress updates. The end of the same real
+run was:
+
+```text
+<--- Final Measurements --->
+Final Aggregated Energy: -16.202077 +/- 0.007948
+Elapsed: 29.156601 s
+Acceptance Rate: 49.916753%
+```
+
+These numerical values are one observed CPU run with the checked-in
+configuration. They are not an authoritative benchmark or a promised result on
+UWHPC hardware.
+
+:::caution[TODO — validated example result]
+Missing: the approved production configuration, physics units, reference
+energy, expected tolerance, source commit, compiler/toolchain, UWHPC hardware,
+and paper citation needed to publish an example as a reproducible scientific
+result.
+:::
+
+## Working-directory inputs
+
+The executable uses fixed relative paths, so normally run it from the repository
+root.
+
+| Path | Behavior |
+| --- | --- |
+| `config.cfg` | Read at startup. If missing, the executable reports that it is using compiled defaults. |
+| `output/vmc.bin` | Opened in binary truncate mode. The parent `output/` directory is not created by the program. If opening fails, the simulation continues and warns. |
+
+The executable does not read standard input.
+
+## Configuration keys
+
+Configuration lines use `Key = Value`. `#` begins a comment. Unknown keys are
+ignored with a warning.
+
+| Key | Compiled default | Checked-in `config.cfg` | Meaning in the implementation |
+| --- | ---: | ---: | --- |
+| `Num_Threads` | `1` | `8` | Number of asynchronous production tasks; also affects optimizer grid size |
+| `Num_Particles` | `7` | `485` | Number of particles |
+| `Warmup_Sweeps` | `100` | `100` | Warmup steps are particles × sweeps |
+| `Measure_Sweeps` | `100` | `100` | Measurement steps are particles × sweeps |
+| `Box_Length` | `10.0` | `190.0` | Periodic cubic-box length |
+| `Block_Size` | `100` | `100` | Energy samples per statistical block |
+| `Master_Seed` | `42` | `123456` | Seed used to derive task seeds |
+| `Jastrow_A` | `0.25` | not set | Jastrow `a` parameter |
+| `Jastrow_B` | `1.0` | not set | Parsed initial value, then replaced by optimizer output |
+
+Validated constraints are:
+
+- `Num_Particles >= 1`
+- `Block_Size >= 1`
+- finite `Box_Length > 0`
+- `Measure_Sweeps >= 1`
+
+The parser does not define documented upper bounds or validate every possible
+cross-parameter combination.
+
+## Terminal output
+
+The program writes the following to standard output:
+
+1. Optimizer search parameters and candidate energies.
+2. The selected `b` value.
+3. The resolved production configuration.
+4. In-place progress from the first production task.
+5. Aggregated energy and uncertainty, elapsed time, and mean acceptance rate.
+
+Failure to open `output/vmc.bin` is written to standard error. Caught C++
+exceptions are printed as `Exception: ...`, after which the program calls
+`exit(-1)`. A successful run returns `0`.
+
+## Binary output
+
+Only production task 0 writes frames to `output/vmc.bin`; the terminal summary
+aggregates all production tasks.
+
+With the default FP64 build, the binary layout is:
+
+```text
+Header:
+  uint64   num_particles
+  float64  box_length
+  uint64   measure_steps
+
+Repeated frame:
+  float64  local_energy
+  float64  running_mean_energy
+  float64  standard_error        # zero until available
+  float64  acceptance_rate       # fraction in [0, 1]
+  float64  positions[3 * num_particles]
+```
+
+The file contains no explicit magic number, version, byte-order marker, build
+precision, or final aggregate record. `render.py` assumes the FP64 layout shown
+above.
+
+:::caution[FP32 compatibility]
+The writer serializes the build-dependent `real_t`, while `render.py` always
+reads float64 values. Do not assume output from an FP32 or fast-math build is
+compatible with the bundled renderer without updating or validating the file
+format.
+:::
+
+## Source of truth
+
+Invocation and aggregation are implemented in `src/main.cpp`; configuration is
+implemented in `src/config/config.hpp`; serialization is implemented in
+`src/output_writer/output_writer.cpp`; and the bundled reader is `render.py`.

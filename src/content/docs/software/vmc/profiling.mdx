@@ -1,0 +1,135 @@
+---
+title: Profile VMC
+description: Build an optimized VMC executable with debug information for an external profiler.
+sidebar:
+  order: 4
+---
+
+The profiling script builds VMC with `RelWithDebInfo`: optimized code plus debug
+information suitable for an external profiler. It does not start a profiler.
+
+:::caution[TODO — UWHPC profiling tools]
+Missing from the repository: supported UWHPC profiler names and modules,
+permissions for hardware performance counters, scheduler requirements,
+recommended profiler launch commands, and guidance for collecting and exporting
+profiles. Do not invent `perf`, Nsight, VTune, or other site commands here.
+:::
+
+## Build the CPU profiling executable
+
+From the repository root:
+
+```bash
+./scripts/profile.sh
+```
+
+The command was run in the documentation workspace. Its complete output was:
+
+```text
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- OpenMP found (CXX 4.5); using it for '#pragma omp simd'.
+-- Configuring done (1.9s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/julian/docs/Variational-Monte-Carlo/build-prof
+[  5%] Building CXX object CMakeFiles/vmc_lib.dir/src/blocking_analysis/blocking_analysis.cpp.o
+[ 11%] Building CXX object CMakeFiles/vmc_lib.dir/src/output_writer/output_writer.cpp.o
+[ 17%] Building CXX object CMakeFiles/vmc_lib.dir/src/jastrow_pade/jastrow_pade.cu.o
+[ 23%] Building CXX object CMakeFiles/vmc_lib.dir/src/jastrow_pade/value_delta_value.cu.o
+[ 29%] Building CXX object CMakeFiles/vmc_lib.dir/src/jastrow_pade/add_derivatives.cu.o
+[ 35%] Building CXX object CMakeFiles/vmc_lib.dir/src/wavefunction/wavefunction.cu.o
+[ 41%] Building CXX object CMakeFiles/vmc_lib.dir/src/slater_plane_wave/build_row_determinant_ratio.cu.o
+[ 47%] Building CXX object CMakeFiles/vmc_lib.dir/src/slater_plane_wave/log_abs_det.cu.o
+[ 52%] Building CXX object CMakeFiles/vmc_lib.dir/src/slater_plane_wave/slater_plane_wave.cu.o
+[ 58%] Building CXX object CMakeFiles/vmc_lib.dir/src/slater_plane_wave/update_restore_trig.cu.o
+[ 64%] Building CXX object CMakeFiles/vmc_lib.dir/src/slater_plane_wave/add_derivatives.cu.o
+[ 70%] Building CXX object CMakeFiles/vmc_lib.dir/src/simulation/simulation.cu.o
+[ 76%] Building CXX object CMakeFiles/vmc_lib.dir/src/energy_tracking/energy_tracking.cu.o
+[ 82%] Building CXX object CMakeFiles/vmc_lib.dir/src/optimizer/jastrow_optimizer.cu.o
+[ 88%] Linking CXX static library libvmc_lib.a
+[ 88%] Built target vmc_lib
+[ 94%] Building CXX object CMakeFiles/vmc.dir/src/main.cpp.o
+[100%] Linking CXX executable vmc
+[100%] Built target vmc
+Profiler build ready: ./build-prof/vmc
+```
+
+The resulting executable was inspected with:
+
+```bash
+file build-prof/vmc
+```
+
+Observed output:
+
+```text
+build-prof/vmc: ELF 64-bit LSB pie executable, x86-64, version 1 (GNU/Linux), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=19219fd9c712e53b3929c3b84882075462bf1bcf, for GNU/Linux 3.2.0, with debug_info, not stripped
+```
+
+The configured cache values were inspected with:
+
+```bash
+cmake -LA -N build-prof | rg '^(CMAKE_BUILD_TYPE|CMAKE_CXX_COMPILER:|CMAKE_CXX_FLAGS_RELWITHDEBINFO|FP_64|VMC_ENABLE_CUDA|VMC_FAST_MATH)'
+```
+
+Observed output:
+
+```text
+CMAKE_BUILD_TYPE:STRING=RelWithDebInfo
+CMAKE_CXX_COMPILER:FILEPATH=/usr/bin/c++
+CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
+FP_64:BOOL=ON
+VMC_ENABLE_CUDA:BOOL=OFF
+VMC_FAST_MATH:BOOL=OFF
+```
+
+Project-specific compiler options additionally select `-O3`, native CPU
+instructions, and frame pointers for `RelWithDebInfo`; see `CMakeLists.txt`.
+
+## Build another profiling variant
+
+The script accepts a custom build directory and the build feature flags:
+
+```bash
+./scripts/profile.sh my-profile-build
+./scripts/profile.sh --fp32
+./scripts/profile.sh --vmc-fast-math
+./scripts/profile.sh --cuda
+```
+
+CPU builds default to `build-prof/vmc`; CUDA builds default to
+`build-prof-cuda/vmc`. Only the default CPU command was verified for this page.
+
+:::caution[TODO — verified GPU profile build]
+Missing: a successful UWHPC `./scripts/profile.sh --cuda` transcript, CUDA
+toolchain details, GPU model, and the site-approved GPU profiler workflow.
+:::
+
+## Choose a profiling workload
+
+The profiler executable reads `config.cfg` from its working directory exactly
+like the Release executable. Keep the configuration and random seed with the
+profile so another person can reproduce the workload.
+
+:::caution[TODO — representative profiling configuration]
+Missing: an approved small CPU configuration, an approved GPU configuration,
+expected runtime and memory use, and guidance on whether output should be
+disabled or retained during profiling.
+:::
+
+## Run the profiler
+
+:::caution[TODO — profiler command]
+Insert the real UWHPC allocation command, module load command, profiler command,
+output location, and report-viewing procedure. The repository only produces
+`build-prof/vmc`; it does not choose or invoke a profiler.
+:::
+
+## Source of truth
+
+The profiling build is defined by `scripts/profile.sh` and the
+`RelWithDebInfo` options in `CMakeLists.txt`.

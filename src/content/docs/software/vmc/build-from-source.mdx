@@ -1,0 +1,126 @@
+---
+title: Build VMC from source
+description: Configure and compile the VMC executable on CPU or CUDA-capable systems.
+sidebar:
+  order: 2
+---
+
+The repository provides build scripts for Linux/macOS shells and Windows
+PowerShell. This page uses the shell scripts and must be followed from the VMC
+repository root, where `CMakeLists.txt` and `config.cfg` are located.
+
+:::caution[TODO — UWHPC build environment]
+Missing from the repository: the supported UWHPC login/build host, exact
+environment-module names and versions for CMake, GCC/Clang, and CUDA, and any
+site policy about compiling on login nodes. Replace this block with the
+UWHPC-wide module and build-host links when that information is available.
+:::
+
+## Requirements
+
+The build configuration requires:
+
+- CMake 3.24 or newer. `CMakeLists.txt` enforces 3.24, even though the current
+  README says 3.20.
+- A compiler with C++23 support.
+- Git when configuring the test build for the first time, because CMake fetches
+  Catch2 from GitHub.
+- A CUDA compiler and toolkit only for a CUDA build.
+
+OpenMP is optional. When CMake finds it, the project uses it for SIMD pragmas;
+otherwise CMake checks for the compiler's `-fopenmp-simd` support.
+
+## Build the default CPU executable
+
+From the repository root, run:
+
+```bash
+./scripts/build.sh
+```
+
+The script selects a Release, double-precision, CPU-only build and writes the
+executable to `build/vmc`.
+
+The command was run in the documentation workspace. This is its complete
+output:
+
+```text
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- OpenMP found (CXX 4.5); using it for '#pragma omp simd'.
+-- Configuring done (2.2s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/julian/docs/Variational-Monte-Carlo/build
+[  5%] Building CXX object CMakeFiles/vmc_lib.dir/src/blocking_analysis/blocking_analysis.cpp.o
+[ 11%] Building CXX object CMakeFiles/vmc_lib.dir/src/output_writer/output_writer.cpp.o
+[ 17%] Building CXX object CMakeFiles/vmc_lib.dir/src/jastrow_pade/jastrow_pade.cu.o
+[ 23%] Building CXX object CMakeFiles/vmc_lib.dir/src/jastrow_pade/value_delta_value.cu.o
+[ 29%] Building CXX object CMakeFiles/vmc_lib.dir/src/jastrow_pade/add_derivatives.cu.o
+[ 35%] Building CXX object CMakeFiles/vmc_lib.dir/src/wavefunction/wavefunction.cu.o
+[ 41%] Building CXX object CMakeFiles/vmc_lib.dir/src/slater_plane_wave/build_row_determinant_ratio.cu.o
+[ 47%] Building CXX object CMakeFiles/vmc_lib.dir/src/slater_plane_wave/log_abs_det.cu.o
+[ 52%] Building CXX object CMakeFiles/vmc_lib.dir/src/slater_plane_wave/slater_plane_wave.cu.o
+[ 58%] Building CXX object CMakeFiles/vmc_lib.dir/src/slater_plane_wave/update_restore_trig.cu.o
+[ 64%] Building CXX object CMakeFiles/vmc_lib.dir/src/slater_plane_wave/add_derivatives.cu.o
+[ 70%] Building CXX object CMakeFiles/vmc_lib.dir/src/simulation/simulation.cu.o
+[ 76%] Building CXX object CMakeFiles/vmc_lib.dir/src/energy_tracking/energy_tracking.cu.o
+[ 82%] Building CXX object CMakeFiles/vmc_lib.dir/src/optimizer/jastrow_optimizer.cu.o
+[ 88%] Linking CXX static library libvmc_lib.a
+[ 88%] Built target vmc_lib
+[ 94%] Building CXX object CMakeFiles/vmc.dir/src/main.cpp.o
+[100%] Linking CXX executable vmc
+[100%] Built target vmc
+```
+
+The compiler version and paths above describe that one observed build, not the
+unpublished UWHPC software environment.
+
+## Select a build variant
+
+`build.sh` accepts one positional build type plus three flags:
+
+| Command | Result |
+| --- | --- |
+| `./scripts/build.sh` | CPU, Release, FP64; produces `build/vmc` |
+| `./scripts/build.sh Debug` | CPU, Debug, FP64; produces `build/vmc` |
+| `./scripts/build.sh --fp32` | CPU, Release, FP32; produces `build/vmc` |
+| `./scripts/build.sh --vmc-fast-math` | CPU, Release, FP32 with the project's fast-math option enabled |
+| `./scripts/build.sh --cuda` | CUDA, Release, FP64; produces `build-cuda/vmc` |
+| `./scripts/build.sh --cuda --fp32` | CUDA, Release, FP32; produces `build-cuda/vmc` |
+
+`--vmc-fast-math` forces FP32 even if FP64 would otherwise be selected. The
+shell script explicitly disables CUDA unless `--cuda` is present.
+
+:::caution[TODO — verified UWHPC CUDA build]
+The CUDA variant was not run in this workspace. Missing: the UWHPC GPU model,
+CUDA module/version, supported compute capability, build node, and a captured
+successful `./scripts/build.sh --cuda` transcript.
+:::
+
+## Configure manually
+
+The default script is equivalent to configuring the important project options
+and then building the `vmc` target:
+
+```bash
+cmake -S . -B build \
+  -DVMC_ENABLE_CUDA=OFF \
+  -DFP_64=ON \
+  -DVMC_FAST_MATH=OFF \
+  -DBUILD_TESTING=OFF \
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target vmc
+```
+
+Use the scripts unless another tool needs a custom CMake build directory or
+generator. Continue with [Test VMC](../testing/) before running a
+production calculation.
+
+## Source of truth
+
+The behavior documented here comes from `CMakeLists.txt`, `scripts/build.sh`,
+and the observed `./scripts/build.sh` run.

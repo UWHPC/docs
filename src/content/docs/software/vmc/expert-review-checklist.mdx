@@ -1,0 +1,60 @@
+---
+title: Domain-expert review checklist
+description: Sentence-level checklist for VMC knowledge and assumptions that are not established by control flow alone.
+sidebar:
+  order: 99
+---
+
+This appendix collects every sentence marked **[general-VMC-knowledge]** or
+**[assumption]** in the current VMC documentation. A reviewer can use it without
+re-reading source-backed build commands, file layouts, or control-flow details.
+
+- **[general-VMC-knowledge]** marks terminology or interpretation drawn from
+  standard VMC practice rather than established solely by this implementation.
+- **[assumption]** marks a claim that the implementation suggests but cannot
+  establish on its own.
+
+## Review checklist
+
+- [ ] **Warmup and equilibration — [general-VMC-knowledge].**
+  [“Calling this phase ‘equilibration’ expresses its intended role; the code
+  does not prove that a selected warmup length is sufficient for every
+  configuration.”](../program-architecture/#review-warmup-equilibration)
+
+  Confirm or correct whether “equilibration” is the right term, and state what
+  convergence diagnostic or production criterion should establish a sufficient
+  warmup length.
+
+- [ ] **Distinct streams and independence — [assumption].**
+  [“Separate seeds show that the tasks are intended as distinct sampling
+  streams; statistical independence is an assumption rather than something
+  control flow alone can prove.”](../program-architecture/#review-seed-independence)
+
+  Confirm or correct the independence assumption and document any RNG stream,
+  seeding, cross-stream, or uncertainty-combination validation required for
+  production use.
+
+## Coverage by page
+
+| Page | General VMC knowledge | Assumptions |
+| --- | ---: | ---: |
+| [VMC overview](../) | 0 | 0 |
+| [Build VMC from source](../build-from-source/) | 0 | 0 |
+| [Test VMC](../testing/) | 0 | 0 |
+| [Profile VMC](../profiling/) | 0 | 0 |
+| [VMC command and file reference](../cli-reference/) | 0 | 0 |
+| [VMC program architecture](../program-architecture/) | 1 | 1 |
+| **Total** | **1** | **1** |
+
+## Review outcome
+
+For each checked item, record one of the following in the source page:
+
+1. **Confirmed:** replace the tag with a citation or a short “reviewed by” note.
+2. **Corrected:** revise the sentence and retain the tag until the correction is
+   approved.
+3. **Moved to TODO:** remove the claim and add the missing evidence to the
+   appropriate TODO block.
+
+When adding either tag to another page, give the sentence a stable anchor and
+add it to this checklist in the same change.

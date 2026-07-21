@@ -1,0 +1,68 @@
+---
+import logo from '../assets/uwhpc-logo-mark.svg';
+
+const { siteTitleHref } = Astro.locals.starlightRoute;
+---
+
+<a class="uwhpc-site-title" href={siteTitleHref} aria-label="UWHPC Documentation home">
+  <img src={logo.src} alt="" width="387" height="234" />
+  <span class="uwhpc-wordmark" aria-hidden="true">UW<span>HPC</span></span>
+  <span class="uwhpc-divider" aria-hidden="true"></span>
+  <span class="uwhpc-docs" aria-hidden="true">Docs</span>
+</a>
+
+<style>
+  .uwhpc-site-title {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.65rem;
+    color: #e8e8e8;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .uwhpc-site-title:focus-visible {
+    outline: 2px solid #cd393c;
+    outline-offset: 4px;
+  }
+
+  img {
+    width: auto;
+    height: 1.65rem;
+  }
+
+  .uwhpc-wordmark {
+    font-family: 'Archivo Variable', sans-serif;
+    font-size: 1.1rem;
+    font-stretch: expanded;
+    font-weight: 750;
+    letter-spacing: -0.035em;
+  }
+
+  .uwhpc-wordmark span {
+    color: #cd393c;
+  }
+
+  .uwhpc-divider {
+    width: 1px;
+    height: 1.25rem;
+    background: #3d3d3d;
+  }
+
+  .uwhpc-docs {
+    overflow: hidden;
+    color: #9a9a9a;
+    font-family: 'Fragment Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 24rem) {
+    .uwhpc-divider,
+    .uwhpc-docs {
+      display: none;
+    }
+  }
+</style>

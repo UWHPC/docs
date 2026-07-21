@@ -1,0 +1,182 @@
+---
+title: VMC program architecture
+description: How configuration, optimization, simulation, energy estimation, statistics, and output fit together.
+sidebar:
+  order: 20
+---
+
+VMC is organized as a small executable around a reusable simulation library.
+`main()` owns configuration, parameter optimization, concurrent production
+tasks, result aggregation, and terminal/file setup. Each `Simulation` owns the
+state and components needed for one sampling stream.
+
+:::caution[TODO — scientific model]
+Missing from the repository documentation: an authoritative Hamiltonian,
+particle and spin definition, unit system, derivation of the Slater–Jastrow
+trial state, Ewald conventions, finite-size treatment, method limitations, and
+paper citation. This page describes software control flow, not a substitute for
+that physics/method explanation.
+:::
+
+## Control flow
+
+```text
+main()
+  |
+  +-- Config::from_file("config.cfg")
+  |
+  +-- JastrowOptimizer::optimize()
+  |     |
+  |     +-- short Simulation::run() calls for candidate b values
+  |
+  +-- open output/vmc.bin
+  |
+  +-- launch Num_Threads asynchronous production tasks
+  |     |
+  |     +-- Simulation::run()
+  |           |
+  |           +-- initialize_positions()
+  |           +-- write_init()       [task 0 only]
+  |           +-- warmup()
+  |           |     +-- metropolis_step()
+  |           +-- measure()
+  |           |     +-- metropolis_step()
+  |           |     +-- wavefunction derivatives
+  |           |     +-- total energy
+  |           |     +-- blocking analysis
+  |           |     +-- write_frame() [task 0 only]
+  |           +-- write_done()        [task 0 only]
+  |
+  +-- aggregate task summaries
+  +-- print final measurements
+```
+
+The optimizer finishes before production tasks are launched. Its candidate
+evaluations create `Simulation` objects without output writers, so optimizer
+trajectories are not written to `vmc.bin`.
+
+## Component map
+
+| Component | Responsibility | Primary source |
+| --- | --- | --- |
+| `main()` | Load configuration, optimize `b`, seed and launch production tasks, aggregate results, write terminal summary | `src/main.cpp` |
+| `Config` | Parse keys, supply defaults, validate selected values, compute step counts and initial proposal size | `src/config/config.hpp` |
+| `JastrowOptimizer` | Scan candidate `b` values with short simulations and select a result | `src/optimizer/jastrow_optimizer.cu` |
+| `Simulation` | Own one particle configuration and run initialization, warmup, and measurement | `src/simulation/simulation.cu`, `.cuh` |
+| `Particles` | Store positions and wavefunction derivative arrays in aligned structure-of-arrays memory | `src/particles/particles.cuh` |
+| `WaveFunction` | Combine the plane-wave Slater component and Padé–Jastrow component; maintain derivative caches | `src/wavefunction/wavefunction.cu`, `.cuh` |
+| `SlaterPlaneWave` | Build plane-wave determinant rows, compute determinant ratios, and update/restore cached state | `src/slater_plane_wave/` |
+| `JastrowPade` | Evaluate the Jastrow term, move delta, and derivatives | `src/jastrow_pade/` |
+| `EnergyTracker` | Maintain real- and reciprocal-space interaction state and evaluate kinetic plus potential energy | `src/energy_tracking/energy_tracking.cu`, `.cuh` |
+| `BlockingAnalysis` | Form block means and estimate a standard error | `src/blocking_analysis/blocking_analysis.cpp`, `.hpp` |
+| `WalkerRNG` | Choose particles, uniform acceptance values, and proposed displacements | `src/utilities/random.cuh` |
+| `OutputWriter` | Abstract init/frame/done records; binary implementation serializes task 0 | `src/output_writer/output_writer.cpp`, `.hpp` |
+
+## One simulation stream
+
+### Initialization
+
+The `Simulation` constructor creates its particles, wavefunction, blocking
+analysis, energy tracker, optional output writer, and RNG. `initialize_positions()`
+draws coordinates uniformly inside the box until the evaluated log wavefunction
+is finite, then initializes the energy tracker's structure factors and real- and
+reciprocal-space terms.
+
+### Warmup
+
+`warmup()` performs `Num_Particles × Warmup_Sweeps` proposed moves. After each
+particle-sized batch it adjusts the proposal step size toward a 50% acceptance
+target. Warmup moves update simulation state but are not sent to the energy
+blocks or output writer.
+
+<span id="review-warmup-equilibration"></span>
+Calling this phase “equilibration” expresses its intended role; the code does
+not prove that a selected warmup length is sufficient for every configuration.
+**[general-VMC-knowledge]**
+
+### Measurement
+
+For each of `Num_Particles × Measure_Sweeps` steps, `measure()`:
+
+1. Proposes and accepts or rejects one particle move.
+2. Updates wavefunction derivatives when necessary.
+3. Evaluates total energy.
+4. Adds the energy to the running mean and blocking analysis.
+5. Writes a frame when an output writer is attached.
+
+The returned `MeasurementSummary` contains a mean energy, an optional standard
+error, and an acceptance fraction.
+
+## Move path
+
+`metropolis_step()` selects one particle and proposes displacements in all three
+coordinates. Coordinates are wrapped into `[0, box_length)`. It calculates the
+Slater determinant ratio and change in the Jastrow value, then compares the
+corresponding log probability ratio with a uniform random draw.
+
+On acceptance, it commits the Slater update and incrementally updates the
+interaction-energy state. On rejection, it restores the cached Slater row and
+old coordinates.
+
+## Energy and statistics path
+
+The wavefunction derivative arrays feed `EnergyTracker::kinetic_energy()`.
+`EnergyTracker::potential_energy()` adds cached real-space and reciprocal-space
+terms to correction and background terms. `eval_total_energy()` returns their
+sum.
+
+Every measured energy enters `BlockingAnalysis`. A standard error becomes
+available after two complete blocks. In `main()`, production-task means are
+averaged; available task errors are combined as
+`sqrt(sum(task_error²)) / Num_Threads`.
+
+This describes the implemented arithmetic. The assumptions required for that
+quantity to be a reliable uncertainty belong in the missing method/statistics
+documentation.
+
+## Concurrency and output ownership
+
+`Num_Threads` controls the number of `std::async(std::launch::async, ...)`
+production tasks. The master RNG generates a separate seed value for each task.
+The code does not use MPI.
+
+Only task 0 receives `BinOutputWriter`; therefore:
+
+- `output/vmc.bin` is a single task's sequence of frames.
+- The final terminal energy and acceptance rate aggregate all tasks.
+- The file does not contain the final cross-task aggregate.
+
+<span id="review-seed-independence"></span>
+Separate seeds show that the tasks are intended as distinct sampling streams;
+statistical independence is an assumption rather than something control flow
+alone can prove. **[assumption]**
+
+:::caution[TODO — UWHPC process and GPU mapping]
+Missing: how one `vmc` process should map to allocated CPU cores, whether
+`Num_Threads` should match a scheduler CPU request, how concurrent tasks share a
+CUDA device, whether multiple GPUs are supported, and whether multi-node use is
+supported operationally. The current source contains no MPI setup.
+:::
+
+## CPU and CUDA implementations
+
+CMake builds the same library sources in one of two modes:
+
+- With CUDA disabled, `.cu` files are compiled as C++ and take their CPU paths.
+- With CUDA enabled and a CUDA compiler available, CMake defines
+  `VMC_CUDA_BACKEND` and links CUDA runtime, cuSOLVER, and cuBLAS.
+
+The selected backend and numeric precision are compile-time properties, not
+runtime CLI options.
+
+:::caution[TODO — validated backend behavior]
+Missing: UWHPC CPU/GPU hardware details, supported CUDA architectures,
+CPU-versus-GPU validation results, performance scaling, memory limits, and an
+approved recommendation for selecting a backend.
+:::
+
+## Source of truth
+
+Start with `src/main.cpp` and `src/simulation/simulation.cu`, then follow the
+component paths in the table above. Build-time backend selection is in
+`CMakeLists.txt`.

@@ -1,0 +1,41 @@
+---
+title: Variational Monte Carlo
+description: Source-backed documentation for building and operating the VMC executable.
+sidebar:
+  order: 1
+---
+
+The VMC repository builds a C++ executable named `vmc`. The program reads a
+fixed `config.cfg`, optimizes a Jastrow parameter with short simulations, runs
+one or more asynchronous production tasks, prints an aggregated terminal
+summary, and optionally records the first task's frames in `output/vmc.bin`.
+
+## Start here
+
+- [Build VMC from source](./build-from-source/)
+- [Run the test suite](./testing/)
+- [Create a profiling build](./profiling/)
+- [Check command, configuration, and output behavior](./cli-reference/)
+- [Follow the program architecture](./program-architecture/)
+- [Review assumptions and general VMC knowledge](./expert-review-checklist/)
+
+:::caution[TODO — UWHPC execution guide]
+Missing: exact module commands, partition and resource requests, CPU/GPU
+hardware, scheduler script, output-storage location, expected runtime, and a
+captured successful UWHPC production run. Until those facts are supplied, this
+site documents locally verified software behavior without inventing cluster
+instructions.
+:::
+
+:::caution[TODO — physics and method background]
+Missing: the authoritative physical model, Hamiltonian, unit system, spin
+assumptions, derivation of the trial state and energy estimator, validation
+references, method limitations, authors, and paper citation.
+:::
+
+## Evidence policy
+
+Build, test, profiling, and command pages include terminal output captured from
+commands run against this checkout. Code-structure claims trace to named files
+and functions. Interpretations that are not established by code are visibly
+tagged and collected in the expert review checklist.

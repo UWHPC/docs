@@ -1,0 +1,4 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "exclude": ["Variational-Monte-Carlo", "UWHPC-Site", "dist"]
+}

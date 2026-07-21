@@ -1,0 +1,147 @@
+---
+title: Test VMC
+description: Build and run the CPU test suite with CTest and Catch2.
+sidebar:
+  order: 3
+---
+
+Run the test suite after building on a new compiler or system and after changing
+the simulation, wavefunction, energy, optimizer, or output code.
+
+:::caution[TODO — UWHPC test-job policy]
+Missing from the repository: whether tests may run on a login node, the required
+partition and resource request if they must be submitted, and the UWHPC module
+commands. Link to the UWHPC-wide testing/job policy when it exists.
+:::
+
+## Run all tests
+
+From the repository root:
+
+```bash
+./scripts/test.sh
+```
+
+The script creates `build-tests`, configures a Debug FP64 CPU build, builds
+`vmc_tests`, and runs CTest with `--output-on-failure`. It always configures
+`VMC_ENABLE_CUDA=OFF`; this script does not test the CUDA backend.
+
+On a clean build, CMake fetches Catch2 3.8.1 from GitHub. The first sandboxed
+attempt in the documentation workspace failed because DNS/network access was
+blocked. The actual terminal error was:
+
+```text
+[ 11%] Creating directories for 'catch2-populate'
+[ 22%] Performing download step (git clone) for 'catch2-populate'
+Cloning into 'catch2-src'...
+fatal: unable to access 'https://github.com/catchorg/Catch2.git/': Could not resolve host: github.com
+Cloning into 'catch2-src'...
+fatal: unable to access 'https://github.com/catchorg/Catch2.git/': Could not resolve host: github.com
+Cloning into 'catch2-src'...
+fatal: unable to access 'https://github.com/catchorg/Catch2.git/': Could not resolve host: github.com
+-- Had to git clone more than once: 3 times.
+CMake Error at catch2-subbuild/catch2-populate-prefix/tmp/catch2-populate-gitclone.cmake:39 (message):
+  Failed to clone repository: 'https://github.com/catchorg/Catch2.git'
+```
+
+After network access was allowed, the same command built the tests and
+completed successfully. The final portion of that real run was:
+
+```text
+85/94 Test #85: Finite-size convergence: N=7 and N=19 agree at r_s=5 .............................................   Passed    3.27 sec
+      Start 86: Blocking analysis produces finite standard error
+86/94 Test #86: Blocking analysis produces finite standard error .................................................   Passed    1.31 sec
+      Start 87: Warmup produces reasonable acceptance rate
+87/94 Test #87: Warmup produces reasonable acceptance rate .......................................................   Passed    0.95 sec
+      Start 88: Energy per particle at r_s=1 is positive and bounded
+88/94 Test #88: Energy per particle at r_s=1 is positive and bounded .............................................   Passed    1.72 sec
+      Start 89: Standard error is small relative to energy scale
+89/94 Test #89: Standard error is small relative to energy scale .................................................   Passed    1.75 sec
+      Start 90: Same seed produces identical energy
+90/94 Test #90: Same seed produces identical energy ..............................................................   Passed    0.73 sec
+      Start 91: Independent seeds produce consistent energies
+91/94 Test #91: Independent seeds produce consistent energies ....................................................   Passed    2.89 sec
+      Start 92: WaveFunction evaluateDerivatives clears buffers and delegates to Jastrow
+92/94 Test #92: WaveFunction evaluateDerivatives clears buffers and delegates to Jastrow .........................   Passed    0.01 sec
+      Start 93: WaveFunction evaluate_log_psi returns finite for N=1
+93/94 Test #93: WaveFunction evaluate_log_psi returns finite for N=1 ..............................................   Passed    0.01 sec
+      Start 94: WaveFunction default Jastrow parameter matches fully polarized cusp choice
+94/94 Test #94: WaveFunction default Jastrow parameter matches fully polarized cusp choice .......................   Passed    0.01 sec
+
+100% tests passed, 0 tests failed out of 94
+
+Total Test time (real) =  52.82 sec
+```
+
+These timings are observations from the documentation workspace, not UWHPC
+performance expectations.
+
+## Run a group of tests
+
+CTest discovers individual Catch2 test cases. The test executable also accepts
+Catch2 tag filters. For example:
+
+```bash
+./build-tests/vmc_tests '[config]'
+./build-tests/vmc_tests '[energy]'
+./build-tests/vmc_tests '[validation]'
+```
+
+To list the available tags:
+
+```bash
+./build-tests/vmc_tests --list-tags
+```
+
+Observed output:
+
+```text
+All available tags:
+   3  [aligned_soa]
+   3  [blocking]
+  11  [config]
+   6  [energy]
+  10  [interacting]
+   6  [jastrow]
+   3  [matrix]
+   3  [optimizer]
+   2  [output_writer]
+   2  [particles]
+   8  [published]
+   9  [rigorous]
+   7  [simulation]
+  19  [slater]
+   7  [validation]
+   4  [wavefunction]
+16 tags
+```
+
+## Test another precision mode
+
+The test script accepts the same precision-related flags as the build script:
+
+```bash
+./scripts/test.sh --fp32
+./scripts/test.sh --vmc-fast-math
+```
+
+You may also provide a build type as a positional argument, such as
+`./scripts/test.sh Release`.
+
+:::caution[TODO — CUDA validation]
+The supplied test script forces a CPU build. Missing: an approved CUDA test
+procedure, the GPU resource request, the CUDA test results, and any
+CPU-versus-GPU numerical acceptance criteria.
+:::
+
+:::caution[TODO — authoritative scientific validation]
+The repository contains tests named against PZ81 and several expected-energy
+checks, but the docs still need the full paper citation, derivation of the
+reference values, unit conventions, approved tolerances, and a maintained table
+of validated production results.
+:::
+
+## Source of truth
+
+The test workflow is defined by `scripts/test.sh` and the testing section of
+`CMakeLists.txt`. Test cases are under `tests/`.

@@ -1,0 +1,32 @@
+---
+title: UWHPC Documentation
+description: Documentation for UWHPC software and workflows.
+template: splash
+hero:
+  title: UWHPC Documentation
+  tagline: Build, test, profile, and understand software running on UWHPC.
+  actions:
+    - text: Read the VMC docs
+      link: /docs/software/vmc/
+      icon: right-arrow
+      variant: primary
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <Card title="Variational Monte Carlo" icon="seti:cpp">
+    Source-backed build, test, profiling, command, output, and architecture
+    documentation for the VMC executable.
+  </Card>
+  <Card title="Expert review" icon="approve-check">
+    A focused checklist collects every statement currently marked as general
+    VMC knowledge or an assumption.
+  </Card>
+</CardGrid>
+
+:::caution[Documentation in progress]
+Cluster-wide pages for access, scheduler use, partitions, modules, hardware,
+storage, GPU jobs, and MPI are not yet available. VMC pages mark those missing
+facts with explicit TODO blocks rather than guessed instructions.
+:::

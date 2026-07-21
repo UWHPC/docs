@@ -1,0 +1,8 @@
+/Variational-Monte-Carlo
+/UWHPC-Site
+/node_modules
+/dist
+/.astro
+
+.agents
+.codex
