@@ -1,0 +1,59 @@
+---
+title: C++ and CUDA coding standards
+description: An initial UWHPC coding standard derived from conventions implemented in VMC.
+sidebar:
+  order: 1
+---
+
+This section defines an initial coding standard for C++ and CUDA projects at
+UWHPC. It is separate from the VMC user documentation, but its rules and
+examples are grounded in the current
+[VMC source](https://github.com/UWHPC/Variational-Monte-Carlo).
+
+:::note[Status of this standard]
+VMC does not contain an organization-wide policy document. These pages turn
+repeatable practices visible in VMC into a proposed shared standard. “Must” and
+“should” are normative within this document; they do not imply that every
+existing UWHPC repository already complies.
+:::
+
+## How to read the rules
+
+| Label | Meaning |
+| --- | --- |
+| **Must** | Required for new code unless a documented project constraint prevents it. |
+| **Should** | The default; a review may accept a documented reason to diverge. |
+| **May** | An allowed project choice, not a requirement. |
+| **VMC example** | Verbatim code or configuration from VMC, linked to its exact source lines. |
+
+The standard separates rules from evidence so that a copied VMC implementation
+detail does not silently become a universal rule.
+
+## Standards at a glance
+
+| Area | Standard | VMC evidence |
+| --- | --- | --- |
+| Host language | Use C++23 for new host code. | [`CMAKE_CXX_STANDARD 23`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/CMakeLists.txt#L18-L19) |
+| Device language | Use CUDA C++20 when CUDA is enabled. | [`CMAKE_CUDA_STANDARD 20`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/CMakeLists.txt#L23-L34) |
+| Formatting | Check in `.clang-format`; use two spaces, no tabs, a 100-column limit, sorted includes, and left-aligned pointers. | [VMC `.clang-format`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/.clang-format#L1-L9) |
+| Diagnostics | Enable a broad warning set and keep conversions visible. | [VMC warning options](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/CMakeLists.txt#L65-L87) |
+| Ownership | Express unique ownership with RAII types, not unmanaged owning pointers. | [`Simulation` ownership](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/simulation/simulation.cuh#L16-L30) |
+| Optional results | Use an optional-value type when absence is expected. | [`MeasurementSummary`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/simulation/simulation.cuh#L53-L58) |
+| CUDA launches | Guard bounds and check launch/runtime errors. | [Kernel and launch](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/jastrow_pade/value_delta_value.cu#L7-L18), [error checks](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/jastrow_pade/value_delta_value.cu#L123-L132) |
+| Tests | Name behavior, tag subsystems, and test numerical invariants as well as API mechanics. | [Simulation tests](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/tests/test_simulation.cpp#L18-L69), [physics invariant test](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/tests/test_rigorous_physics.cpp#L162-L207) |
+
+## Pages
+
+- [C++ coding standard](./cpp/) covers formatting, naming, types, APIs,
+  ownership, errors, and tests.
+- [CUDA coding standard](./cuda/) covers backend separation, kernel shape,
+  launch checks, memory, portability, and numerical modes.
+- [Review checklist](./review-checklist/) condenses both standards into a pull
+  request checklist.
+
+## Scope boundaries
+
+This edition does not define repository naming, branch protection, review
+approval counts, release management, continuous-integration runners, supported
+GPU models, or cluster compiler/module versions. Those require UWHPC-wide
+operational decisions rather than evidence from VMC.

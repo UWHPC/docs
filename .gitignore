@@ -3,6 +3,10 @@
 /node_modules
 /dist
 /.astro
+/cpp-standards
+/UWHPC-Onboarding
+/UWHPC-Onboarding-Template
 
 .agents
 .codex
+.claude

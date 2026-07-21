@@ -1,0 +1,204 @@
+---
+title: C++ coding standard
+description: Source-backed C++ formatting, interface, ownership, error-handling, and testing rules.
+sidebar:
+  order: 2
+---
+
+These rules are the host-code baseline for new UWHPC C++ projects. The examples
+are copied from VMC; links below each example point to the exact source lines.
+
+## Language and diagnostics
+
+- **Must:** compile new host code as C++23 or newer.
+- **Must:** require the selected language level rather than silently accepting
+  an older compiler mode.
+- **Must:** enable `-Wall -Wextra -Wpedantic -Wshadow -Wconversion
+  -Wsign-conversion` on GCC and Clang, or `/W4 /permissive-` on MSVC.
+- **Should:** generate `compile_commands.json` for editor and static-analysis
+  tooling.
+- **Must:** keep warning and optimization flags target-scoped.
+
+VMC sets the required standard and warning policy in
+[`CMakeLists.txt`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/CMakeLists.txt#L18-L19)
+and
+[`CMakeLists.txt`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/CMakeLists.txt#L65-L87).
+Its target-scoped application is visible in
+[`target_compile_options`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/CMakeLists.txt#L164-L174).
+
+## Formatting
+
+- **Must:** check a `.clang-format` file into the repository.
+- **Must:** use two-space indentation and spaces rather than tabs.
+- **Must:** keep code within 100 columns after formatting.
+- **Must:** sort includes and attach `*` and `&` to the type.
+- **Should:** run `clang-format` on changed C++, header, `.cu`, and `.cuh` files
+  before review.
+
+VMC example:
+
+```yaml
+BasedOnStyle: LLVM
+Standard: Latest
+ColumnLimit: 100
+IndentWidth: 2
+UseTab: Never
+PointerAlignment: Left
+AlignConsecutiveMacros: true
+SortIncludes: true
+AccessModifierOffset: -2
+```
+
+Source: [VMC `.clang-format`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/.clang-format#L1-L9).
+
+## Names and file layout
+
+- **Must:** use `PascalCase` for classes, structs, and enums.
+- **Must:** use `snake_case` for functions and ordinary variables.
+- **Must:** suffix private data members with `_`.
+- **Should:** keep declarations in `.hpp` or `.cuh` and non-template
+  definitions in `.cpp` or `.cu`.
+- **Should:** place private implementation helpers in an unnamed namespace in
+  the implementation file.
+- **May:** retain short conventional mathematical names such as `L`, `N`, `i`,
+  and `j` when their scope is small and their meaning is standard in the local
+  algorithm.
+
+VMC example:
+
+```cpp
+class Simulation {
+private:
+  Config config_;
+
+  Particles particles_;
+  WaveFunction wave_function_;
+  BlockingAnalysis blocking_analysis_;
+  EnergyTracker energy_tracker_;
+  std::unique_ptr<OutputWriter> output_writer_;
+```
+
+Source: [`src/simulation/simulation.cuh`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/simulation/simulation.cuh#L16-L30).
+
+## Initialization and type safety
+
+- **Must:** initialize objects and scalars; use brace initialization by
+  default.
+- **Must:** use fixed-width integer types for serialized or externally defined
+  binary fields.
+- **Should:** use `std::size_t` for sizes and indexes into in-memory containers.
+- **Must:** use explicit casts when crossing numeric domains; do not rely on a
+  narrowing implicit conversion.
+- **Must:** use `const` for values that do not change after initialization.
+- **Should:** centralize project-wide numerical precision behind a type alias
+  when both FP32 and FP64 builds are supported.
+
+VMC example:
+
+```cpp
+#ifdef FP_64
+using real_t = double;
+#else
+using real_t = float;
+#endif
+
+using complex_t = std::complex<real_t>;
+```
+
+Source: [`src/utilities/macros.cuh`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/utilities/macros.cuh#L16-L22).
+
+The VMC parser makes conversion points explicit:
+
+```cpp
+if constexpr (std::is_signed_v<T>) {
+  out = static_cast<T>(std::stoll(it->second));
+} else {
+  out = static_cast<T>(std::stoull(it->second));
+}
+```
+
+Source: [`src/config/config.hpp`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/config/config.hpp#L125-L135).
+
+## Interfaces and ownership
+
+- **Must:** use `explicit` on a single-argument constructor unless implicit
+  conversion is intentional and documented.
+- **Must:** mark a result `[[nodiscard]]` when ignoring it is likely a defect.
+- **Must:** express exclusive ownership with an RAII owner such as
+  `std::unique_ptr`.
+- **Must:** use `std::optional<T>` when “no value yet” or “not available” is a
+  normal result, rather than a magic sentinel.
+- **Should:** make query functions `const` and use `noexcept` where the contract
+  truly forbids exceptions.
+- **Must:** give polymorphic base classes a virtual destructor.
+
+VMC example:
+
+```cpp
+struct MeasurementSummary {
+  real_t mean_energy;
+  std::optional<real_t> standard_error;
+  real_t acceptance_rate;
+};
+
+explicit Simulation(Config cfg, std::unique_ptr<OutputWriter> output_writer = nullptr);
+```
+
+Source: [`src/simulation/simulation.cuh`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/simulation/simulation.cuh#L53-L61).
+
+The output interface demonstrates virtual destruction and explicit overrides:
+
+```cpp
+class OutputWriter {
+public:
+  virtual ~OutputWriter() = default;
+
+  virtual void write_init(const InitData& data) = 0;
+  virtual void write_frame(const FrameData& data) = 0;
+  virtual void write_done(const DoneData& data) = 0;
+};
+```
+
+Source: [`src/output_writer/output_writer.hpp`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/output_writer/output_writer.hpp#L46-L53).
+
+## Errors and validation
+
+- **Must:** validate configuration and public API preconditions at their input
+  boundary.
+- **Must:** report invalid host-side input with a specific exception or a
+  project-wide error type.
+- **Must:** never ignore an error code from a runtime or numerical library.
+- **Should:** include the invalid field and required constraint in an error
+  message.
+- **Must:** not throw across a CUDA kernel boundary; CUDA failures follow the
+  device/runtime policy in the [CUDA standard](../cuda/).
+
+VMC example:
+
+```cpp
+if (num_particles < 1U) {
+  throw std::invalid_argument("[Config] Num_Particles must be >= 1");
+}
+if (box_length <= 0.0_r || !std::isfinite(box_length)) {
+  throw std::invalid_argument("[Config] Box_Length must be finite and > 0");
+}
+```
+
+Source: [`src/config/config.hpp`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/config/config.hpp#L65-L82).
+
+## Tests
+
+- **Must:** test each public component's normal path, boundary cases, and error
+  path.
+- **Must:** give tests behavior-oriented names and subsystem tags.
+- **Must:** make stochastic tests reproducible with explicit seeds.
+- **Must:** test scientific or numerical invariants independently of testing
+  mere execution.
+- **Should:** compare floating-point results with a named tolerance appropriate
+  to the precision mode.
+
+VMC's simulation tests validate record counts, rates, optional results, and
+edge cases in
+[`tests/test_simulation.cpp`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/tests/test_simulation.cpp#L18-L143).
+Its rigorous suite independently checks a near-contact analytic result in
+[`tests/test_rigorous_physics.cpp`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/tests/test_rigorous_physics.cpp#L162-L207).

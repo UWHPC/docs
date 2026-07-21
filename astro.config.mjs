@@ -36,6 +36,23 @@ export default defineConfig({
       ],
       sidebar: [
         {
+          label: 'Onboarding',
+          items: [
+            { label: 'Overview', slug: 'onboarding' },
+            { label: 'Complete the exercise', slug: 'onboarding/complete-the-exercise' },
+            { label: 'Submit and discuss', slug: 'onboarding/submit-and-discuss' },
+          ],
+        },
+        {
+          label: 'C++ & CUDA Standards',
+          items: [
+            { label: 'Overview', slug: 'cpp-standards' },
+            { label: 'C++ coding standard', slug: 'cpp-standards/cpp' },
+            { label: 'CUDA coding standard', slug: 'cpp-standards/cuda' },
+            { label: 'Review checklist', slug: 'cpp-standards/review-checklist' },
+          ],
+        },
+        {
           label: 'VMC',
           items: [
             { label: 'Overview', slug: 'software/vmc' },

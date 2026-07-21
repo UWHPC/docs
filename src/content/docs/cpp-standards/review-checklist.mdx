@@ -1,0 +1,67 @@
+---
+title: C++ and CUDA review checklist
+description: A pull request checklist for applying the UWHPC C++ and CUDA coding standards.
+sidebar:
+  order: 4
+---
+
+Use this checklist for a focused review. The detailed rationale and VMC examples
+live in the [C++ standard](../cpp/) and [CUDA standard](../cuda/).
+
+## All C++ changes
+
+- [ ] Changed files conform to the checked-in `.clang-format` configuration.
+- [ ] The target requests the required language standard and strict warning set.
+- [ ] New declarations follow the type, function, variable, and private-member
+  naming rules.
+- [ ] Objects and scalars are initialized; numeric conversions are explicit.
+- [ ] Values that do not change are `const`.
+- [ ] Owning resources use RAII; raw pointers and references are non-owning.
+- [ ] Single-argument constructors are `explicit` unless conversion is intended.
+- [ ] Important return values are `[[nodiscard]]`.
+- [ ] Expected absence uses `std::optional` or an equally explicit result type.
+- [ ] Input validation happens at the boundary and error messages identify the
+  violated constraint.
+- [ ] Tests cover the normal path, boundaries, and failures.
+- [ ] Stochastic tests use fixed seeds; numerical tests state their tolerance.
+- [ ] Scientific code tests an invariant or independent reference, not only that
+  the function returns.
+
+VMC evidence: [format policy](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/.clang-format#L1-L9),
+[warning policy](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/CMakeLists.txt#L65-L87),
+[ownership and optional results](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/simulation/simulation.cuh#L16-L61),
+and [rigorous numerical tests](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/tests/test_rigorous_physics.cpp#L162-L207).
+
+## CUDA changes
+
+- [ ] The CUDA feature boundary is controlled by one project build definition.
+- [ ] Each global index is bounds-checked before memory access.
+- [ ] Grid dimensions cover non-divisible problem sizes.
+- [ ] Every launch is followed by `cudaGetLastError()` through the checked-call
+  policy.
+- [ ] Every Runtime, cuBLAS, cuSOLVER, or other library status is checked.
+- [ ] Synchronization has a host-consumption, phase-boundary, debugging, or
+  measurement reason.
+- [ ] Device or managed allocation has matching RAII cleanup.
+- [ ] `RESTRICT` is used only where non-aliasing is guaranteed.
+- [ ] Host/device math uses the shared precision-aware wrapper.
+- [ ] Fast or approximate math is explicit, documented, and tested separately.
+- [ ] CPU and CUDA paths implement the same public contract.
+- [ ] Tests include sizes that are not block-size multiples and cover each
+  supported precision mode.
+- [ ] Validation or benchmark records name the CUDA toolkit and GPU architecture.
+
+VMC evidence: [bounds-checked kernel](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/jastrow_pade/value_delta_value.cu#L7-L18),
+[checked launch](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/jastrow_pade/value_delta_value.cu#L117-L132),
+[managed-memory RAII](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/utilities/aligned_soa.cuh#L11-L56),
+and [precision-aware math](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/utilities/math.cuh#L39-L52).
+
+## Before merge
+
+- [ ] Formatting, build, and test commands pass for every changed backend.
+- [ ] Compiler warnings are not suppressed without a local explanation.
+- [ ] User-visible behavior and build options are documented.
+- [ ] Performance-sensitive changes include a reproducible comparison when
+  performance is part of the claim.
+- [ ] Any deliberate departure from this standard is recorded in the pull
+  request with its scope and reason.

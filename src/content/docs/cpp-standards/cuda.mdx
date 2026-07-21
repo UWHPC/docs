@@ -1,0 +1,230 @@
+---
+title: CUDA coding standard
+description: Source-backed CUDA backend, kernel, launch, memory, portability, and numerical rules.
+sidebar:
+  order: 3
+---
+
+These rules extend the [C++ coding standard](../cpp/) for code compiled with
+CUDA. The VMC examples show one project implementation; the rules state which
+parts should carry across UWHPC projects.
+
+## Language and backend boundary
+
+- **Must:** require CUDA C++20 or newer for new CUDA code.
+- **Must:** make the CUDA backend an explicit build-time feature.
+- **Must:** keep backend-specific compilation behind a single project feature
+  definition rather than scattered compiler guesses.
+- **Should:** provide a CPU implementation for portable numerical code when the
+  algorithm and maintenance cost permit it.
+- **Must:** keep public behavior consistent across CPU and CUDA backends; test
+  both where supported.
+
+VMC detects CUDA, sets CUDA C++20, and defines `VMC_CUDA_BACKEND` on the library:
+[`CMakeLists.txt`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/CMakeLists.txt#L21-L35),
+[`CMakeLists.txt`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/CMakeLists.txt#L176-L190).
+Its `.cu` files select a kernel path with `#ifdef VMC_CUDA_BACKEND` and retain a
+host implementation after `#else`, for example
+[`JastrowPade::value`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/jastrow_pade/value_delta_value.cu#L111-L178).
+
+## Kernel shape and bounds
+
+- **Must:** derive a thread's global index from CUDA launch coordinates or one
+  shared, reviewed helper.
+- **Must:** guard every global index before reading or writing user data.
+- **Must:** guard each dimension of a multidimensional launch.
+- **Should:** return early for inactive work rather than nesting the kernel
+  body.
+- **Must:** derive grid dimensions from the problem size; do not assume exact
+  divisibility by the block size.
+
+VMC example:
+
+```cpp
+__global__
+void cudaValue(
+  std::size_t num_particles,
+  real_t L, real_t a, real_t b,
+  const real_t* RESTRICT p_x, const real_t* RESTRICT p_y, const real_t* RESTRICT p_z,
+  real_t* RESTRICT jastrow_pade
+) {
+  const std::size_t i{blockIdx.x * blockDim.x + threadIdx.x};
+  if (i >= num_particles) { return; }
+
+  const std::size_t j{blockIdx.y * blockDim.y + threadIdx.y};
+  if (j >= num_particles) { return; }
+```
+
+Source: [`src/jastrow_pade/value_delta_value.cu`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/jastrow_pade/value_delta_value.cu#L7-L18).
+
+For two-dimensional work, VMC computes each grid dimension with a ceiling
+division helper:
+
+```cpp
+dim3 valueThreads(16, 16);
+dim3 valueBlocks(
+  vmc::cudaNumBlocks(num_particles, valueThreads.x),
+  vmc::cudaNumBlocks(num_particles, valueThreads.y)
+);
+```
+
+Source: [`src/jastrow_pade/value_delta_value.cu`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/jastrow_pade/value_delta_value.cu#L117-L121).
+
+## Launches and errors
+
+- **Must:** check every CUDA kernel launch with `cudaGetLastError()`.
+- **Must:** check every CUDA Runtime and numerical-library call.
+- **Must:** include the source file, source line, and runtime message in fatal
+  CUDA diagnostics.
+- **Should:** centralize checks in a macro or function that evaluates its
+  argument exactly once.
+- **Should:** synchronize only at a required host-consumption or phase boundary;
+  document extra synchronizations used for debugging or deterministic failure
+  localization.
+
+VMC example:
+
+```cpp
+cudaValue<<<valueBlocks, valueThreads>>>(
+  num_particles,
+  box_length_, this->a(), this->b(),
+  particles.pos().x_, particles.pos().y_, particles.pos().z_,
+  jastrow_pade[0]
+);
+
+CUDA_CHECK(cudaGetLastError());
+CUDA_CHECK(cudaDeviceSynchronize());
+return 0.5_r * *jastrow_pade[0];
+```
+
+Source: [`src/jastrow_pade/value_delta_value.cu`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/jastrow_pade/value_delta_value.cu#L123-L132).
+
+The checked-call macro evaluates the call once, prints location and the CUDA
+message, and aborts:
+
+```cpp
+#define CUDA_CHECK(call) \
+  do { \
+    cudaError_t cuda_check_result_{(call)}; \
+    if (cuda_check_result_ != cudaSuccess) { \
+      std::fprintf( \
+        stderr, \
+        "CUDA error at %s:%d: %s\n", \
+        __FILE__, \
+        __LINE__, \
+        cudaGetErrorString(cuda_check_result_) \
+      ); \
+      std::abort(); \
+    } \
+  } while (0)
+```
+
+Source: [`src/utilities/macros.cuh`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/utilities/macros.cuh#L30-L43).
+
+## Memory and data access
+
+- **Must:** put device or managed allocations under RAII ownership.
+- **Must:** pair each allocation API with its matching deallocation API in one
+  abstraction.
+- **Should:** use structure-of-arrays storage for kernels that access the same
+  field across many elements.
+- **May:** mark non-aliasing pointer parameters with a portable `RESTRICT`
+  abstraction, but only when the caller satisfies that non-aliasing contract.
+- **Must:** initialize storage before kernels consume it.
+
+VMC routes managed allocation through a backend allocator and owns it through a
+custom `std::unique_ptr` deleter:
+
+```cpp
+void* ptr{};
+CUDA_CHECK(cudaMallocManaged(&ptr, size));
+
+return ptr;
+```
+
+```cpp
+struct SoADeleter {
+  template <typename T>
+  void operator()(T* ptr) const {
+    backend_free(ptr);
+  }
+};
+```
+
+Source: [`src/utilities/aligned_soa.cuh`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/utilities/aligned_soa.cuh#L11-L48).
+
+`Particles` stores positions and derivatives as separate aligned arrays:
+[`src/particles/particles.cuh`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/particles/particles.cuh#L12-L44).
+
+## Host/device portability
+
+- **Must:** isolate host/device annotations behind a project macro when the same
+  function is compiled for both backends.
+- **Should:** wrap mathematical operations whose host and device spellings or
+  precision behavior differ.
+- **Must:** branch on `__CUDA_ARCH__` only for device-compilation behavior, not
+  as the project's general “CUDA enabled” switch.
+- **Must:** keep backend wrappers small, inline, and unit-testable on the host.
+
+VMC's `CUDA_CALLABLE` macro expands to `__host__ __device__` only in a CUDA
+build:
+
+```cpp
+#ifdef VMC_CUDA_BACKEND
+  #define CUDA_CALLABLE __host__ __device__
+#else
+  #define CUDA_CALLABLE
+#endif
+```
+
+Source: [`src/utilities/macros.cuh`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/utilities/macros.cuh#L61-L66).
+
+Its math wrapper chooses a device implementation only under `__CUDA_ARCH__` and
+uses `std::sqrt` on the host:
+
+```cpp
+CUDA_CALLABLE [[nodiscard]]
+inline real_t sqrt(real_t arg) noexcept {
+#if defined(VMC_CUDA_BACKEND) && defined(__CUDA_ARCH__)
+  #ifdef FP_64
+    return ::sqrt(arg);
+  #elif defined(VMC_FAST_MATH)
+    return __fsqrt_rn(arg);
+  #else
+    return sqrtf(arg);
+  #endif
+#else
+  return std::sqrt(arg);
+#endif
+}
+```
+
+Source: [`src/utilities/math.cuh`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/utilities/math.cuh#L39-L52).
+
+## Numerical modes
+
+- **Must:** make precision and approximate-math modes explicit build options.
+- **Must:** reject incompatible numerical modes during configuration or
+  compilation.
+- **Must:** test every supported precision/backend combination with tolerances
+  appropriate to that combination.
+- **Must:** document when an approximate intrinsic changes accuracy guarantees.
+- **Should:** default to the most conservative supported numerical mode.
+
+VMC defaults to FP64, makes fast approximate math opt-in, and forces FP32 when
+fast math is selected:
+[`CMakeLists.txt`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/CMakeLists.txt#L37-L44).
+The math header independently rejects the invalid FP64/fast-math combination:
+[`src/utilities/math.cuh`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/utilities/math.cuh#L5-L7).
+
+## CUDA testing requirements
+
+- **Must:** run the same high-level numerical invariants on CPU and CUDA builds.
+- **Must:** include problem sizes that are not multiples of the selected block
+  dimensions, exercising bounds guards.
+- **Must:** test empty, minimum-size, degenerate, and representative large
+  inputs where the API permits them.
+- **Should:** use a CUDA memory/race analysis tool in CI or a documented release
+  validation job.
+- **Should:** record the GPU architecture and CUDA toolkit version with
+  benchmark or validation results.
