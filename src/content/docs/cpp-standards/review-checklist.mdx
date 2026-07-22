@@ -35,6 +35,19 @@ and [rigorous numerical tests](https://github.com/UWHPC/Variational-Monte-Carlo/
 ## CUDA changes
 
 - [ ] The CUDA feature boundary is controlled by one project build definition.
+- [ ] A dual-backend function has one signature with `#ifdef VMC_CUDA_BACKEND`
+  selecting the body, not duplicate file-scope definitions.
+- [ ] `__global__` is on its own line; kernels are named `cudaX`; parameters are
+  grouped (sizes/scalars, inputs, outputs) and the launch mirrors the signature.
+- [ ] Launch-config variables follow `<kernel>Threads` / `<kernel>Blocks` naming.
+- [ ] Member calls inside members use `this->`; attributes and qualifiers sit on
+  their own line.
+- [ ] Kernels take minimal arguments — primitives derived in-kernel, single
+  values instead of array-plus-index.
+- [ ] Functions that call device-only APIs are split with `__CUDA_ARCH__`, not
+  marked `CUDA_CALLABLE`.
+- [ ] `noexcept` is kept on host-covering wrappers and dropped on GPU-only
+  functions; trivial members use `= default`.
 - [ ] Each global index is bounds-checked before memory access.
 - [ ] Grid dimensions cover non-divisible problem sizes.
 - [ ] Every launch is followed by `cudaGetLastError()` through the checked-call

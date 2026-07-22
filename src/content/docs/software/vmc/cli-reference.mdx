@@ -76,10 +76,6 @@ Elapsed: 29.156601 s
 Acceptance Rate: 49.916753%
 ```
 
-These numerical values are one observed CPU run with the checked-in
-configuration. They are not an authoritative benchmark or a promised result on
-UWHPC hardware.
-
 :::caution[TODO — validated example result]
 Missing: the approved production configuration, physics units, reference
 energy, expected tolerance, source commit, compiler/toolchain, UWHPC hardware,
@@ -162,14 +158,13 @@ Repeated frame:
 ```
 
 The file contains no explicit magic number, version, byte-order marker, build
-precision, or final aggregate record. `render.py` assumes the FP64 layout shown
-above.
+precision, or final aggregate record.
 
 :::caution[FP32 compatibility]
-The writer serializes the build-dependent `real_t`, while `render.py` always
-reads float64 values. Do not assume output from an FP32 or fast-math build is
-compatible with the bundled renderer without updating or validating the file
-format.
+`render.py` always reads the FP64 layout shown above, while the writer
+serializes the build-dependent `real_t`. Do not assume output from an FP32 or
+fast-math build is compatible with the bundled renderer without updating or
+validating the file format.
 :::
 
 ## Source of truth

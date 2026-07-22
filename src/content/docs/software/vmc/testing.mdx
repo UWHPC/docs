@@ -26,26 +26,8 @@ The script creates `build-tests`, configures a Debug FP64 CPU build, builds
 `vmc_tests`, and runs CTest with `--output-on-failure`. It always configures
 `VMC_ENABLE_CUDA=OFF`; this script does not test the CUDA backend.
 
-On a clean build, CMake fetches Catch2 3.8.1 from GitHub. The first sandboxed
-attempt in the documentation workspace failed because DNS/network access was
-blocked. The actual terminal error was:
-
-```text
-[ 11%] Creating directories for 'catch2-populate'
-[ 22%] Performing download step (git clone) for 'catch2-populate'
-Cloning into 'catch2-src'...
-fatal: unable to access 'https://github.com/catchorg/Catch2.git/': Could not resolve host: github.com
-Cloning into 'catch2-src'...
-fatal: unable to access 'https://github.com/catchorg/Catch2.git/': Could not resolve host: github.com
-Cloning into 'catch2-src'...
-fatal: unable to access 'https://github.com/catchorg/Catch2.git/': Could not resolve host: github.com
--- Had to git clone more than once: 3 times.
-CMake Error at catch2-subbuild/catch2-populate-prefix/tmp/catch2-populate-gitclone.cmake:39 (message):
-  Failed to clone repository: 'https://github.com/catchorg/Catch2.git'
-```
-
-After network access was allowed, the same command built the tests and
-completed successfully. The final portion of that real run was:
+On a clean build, CMake fetches Catch2 3.8.1 from GitHub, so the first
+configuration needs network access. The final portion of a successful run was:
 
 ```text
 85/94 Test #85: Finite-size convergence: N=7 and N=19 agree at r_s=5 .............................................   Passed    3.27 sec
@@ -72,9 +54,6 @@ completed successfully. The final portion of that real run was:
 
 Total Test time (real) =  52.82 sec
 ```
-
-These timings are observations from the documentation workspace, not UWHPC
-performance expectations.
 
 ## Run a group of tests
 

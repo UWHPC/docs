@@ -24,32 +24,19 @@ that physics/method explanation.
 main()
   |
   +-- Config::from_file("config.cfg")
-  |
-  +-- JastrowOptimizer::optimize()
-  |     |
-  |     +-- short Simulation::run() calls for candidate b values
-  |
+  +-- JastrowOptimizer::optimize()     short Simulation::run() calls for candidate b
   +-- open output/vmc.bin
-  |
   +-- launch Num_Threads asynchronous production tasks
   |     |
-  |     +-- Simulation::run()
-  |           |
-  |           +-- initialize_positions()
-  |           +-- write_init()       [task 0 only]
-  |           +-- warmup()
-  |           |     +-- metropolis_step()
-  |           +-- measure()
-  |           |     +-- metropolis_step()
-  |           |     +-- wavefunction derivatives
-  |           |     +-- total energy
-  |           |     +-- blocking analysis
-  |           |     +-- write_frame() [task 0 only]
-  |           +-- write_done()        [task 0 only]
+  |     +-- Simulation::run()          initialize_positions -> warmup -> measure
+  |           +-- write_init/frame/done  [task 0 only]
   |
   +-- aggregate task summaries
   +-- print final measurements
 ```
+
+The per-phase internals of `Simulation::run()` (warmup and measurement steps) are
+described under [One simulation stream](#one-simulation-stream) below.
 
 The optimizer finishes before production tasks are launched. Its candidate
 evaluations create `Simulation` objects without output writers, so optimizer

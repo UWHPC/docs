@@ -29,18 +29,18 @@ existing UWHPC repository already complies.
 The standard separates rules from evidence so that a copied VMC implementation
 detail does not silently become a universal rule.
 
-## Standards at a glance
+## Language and toolchain at a glance
+
+The quick facts to configure a new project. The full formatting, naming,
+ownership, error-handling, CUDA, and testing rules — with VMC evidence — live in
+the pages below.
 
 | Area | Standard | VMC evidence |
 | --- | --- | --- |
 | Host language | Use C++23 for new host code. | [`CMAKE_CXX_STANDARD 23`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/CMakeLists.txt#L18-L19) |
 | Device language | Use CUDA C++20 when CUDA is enabled. | [`CMAKE_CUDA_STANDARD 20`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/CMakeLists.txt#L23-L34) |
-| Formatting | Check in `.clang-format`; use two spaces, no tabs, a 100-column limit, sorted includes, and left-aligned pointers. | [VMC `.clang-format`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/.clang-format#L1-L9) |
+| Formatting | Check in `.clang-format`; two spaces, 100 columns, sorted includes, left-aligned pointers. | [VMC `.clang-format`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/.clang-format#L1-L9) |
 | Diagnostics | Enable a broad warning set and keep conversions visible. | [VMC warning options](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/CMakeLists.txt#L65-L87) |
-| Ownership | Express unique ownership with RAII types, not unmanaged owning pointers. | [`Simulation` ownership](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/simulation/simulation.cuh#L16-L30) |
-| Optional results | Use an optional-value type when absence is expected. | [`MeasurementSummary`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/simulation/simulation.cuh#L53-L58) |
-| CUDA launches | Guard bounds and check launch/runtime errors. | [Kernel and launch](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/jastrow_pade/value_delta_value.cu#L7-L18), [error checks](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/jastrow_pade/value_delta_value.cu#L123-L132) |
-| Tests | Name behavior, tag subsystems, and test numerical invariants as well as API mechanics. | [Simulation tests](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/tests/test_simulation.cpp#L18-L69), [physics invariant test](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/tests/test_rigorous_physics.cpp#L162-L207) |
 
 ## Pages
 

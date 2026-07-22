@@ -19,6 +19,9 @@ parts should carry across UWHPC projects.
   algorithm and maintenance cost permit it.
 - **Must:** keep public behavior consistent across CPU and CUDA backends; test
   both where supported.
+- **Must:** when a function supports both backends, keep one signature and select
+  the body inside it with `#ifdef VMC_CUDA_BACKEND`; do not declare two
+  file-scope definitions of the same function.
 
 VMC detects CUDA, sets CUDA C++20, and defines `VMC_CUDA_BACKEND` on the library:
 [`CMakeLists.txt`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/CMakeLists.txt#L21-L35),
@@ -26,6 +29,89 @@ VMC detects CUDA, sets CUDA C++20, and defines `VMC_CUDA_BACKEND` on the library
 Its `.cu` files select a kernel path with `#ifdef VMC_CUDA_BACKEND` and retain a
 host implementation after `#else`, for example
 [`JastrowPade::value`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/jastrow_pade/value_delta_value.cu#L111-L178).
+`SlaterPlaneWave::add_derivatives` shows the same rule at the member-function
+level: one signature whose body branches on the backend, with the CUDA kernel in
+an anonymous namespace above it:
+[`src/slater_plane_wave/add_derivatives.cu`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/slater_plane_wave/add_derivatives.cu#L79-L112).
+
+## File template
+
+A ported component is two files: a backend-agnostic header and an
+implementation whose backend is selected at compile time. Copy the skeletons
+below and replace each `// <...>` placeholder. The rules that shape each block
+are detailed in the sections that follow.
+
+Header — one declaration per operation, identical for both backends:
+
+```cpp
+// component.cuh
+#pragma once
+
+#include "../utilities/math.cuh"   // real_t, RESTRICT, CUDA_CHECK, vmc:: helpers
+// <other dependency headers>
+
+class Component {
+private:
+  // <members_, each suffixed with a trailing underscore>
+
+public:
+  explicit Component(/* <ctor args> */) noexcept;
+
+  // The same signature serves the CPU and CUDA definitions.
+  [[nodiscard]] real_t operation(const Particles& particles) const noexcept;
+};
+```
+
+Implementation — kernels in an anonymous namespace under the backend guard, then
+one member definition whose body branches on the backend:
+
+```cpp
+// component.cu
+#include "component.cuh"
+
+#ifdef VMC_CUDA_BACKEND
+#include <cstddef>
+namespace {
+
+__global__
+void cudaOperation(
+  std::size_t n,                 // sizes and scalar constants first
+  const real_t* RESTRICT in_x,   // input pointers next
+  real_t* RESTRICT out           // output pointers last
+) {
+  const auto [i]{vmc::cudaThreadIdx<1>()};
+  if (i >= n) { return; }
+
+  // <kernel body>
+}
+
+} // namespace
+#else
+// <CPU-only includes, e.g. <cstring>; omit this #else block if none are needed>
+#endif
+
+real_t Component::operation(const Particles& particles) const noexcept {
+#ifdef VMC_CUDA_BACKEND
+  // Host wrapper: launch config, launch mirroring the signature, checks.
+  dim3 operationThreads(256);
+  dim3 operationBlocks(
+    vmc::cudaNumBlocks(/* <n> */, operationThreads.x)
+  );
+  cudaOperation<<<operationBlocks, operationThreads>>>(
+    // <same argument grouping as the kernel signature>
+  );
+  CUDA_CHECK(cudaGetLastError());
+  CUDA_CHECK(cudaDeviceSynchronize());
+
+  // <read result and return>
+#else
+  // <CPU implementation>
+#endif
+}
+```
+
+For a filled-in version of this exact shape, see
+[`src/slater_plane_wave/add_derivatives.cu`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/slater_plane_wave/add_derivatives.cu#L1-L112).
 
 ## Kernel shape and bounds
 
@@ -69,6 +155,96 @@ dim3 valueBlocks(
 ```
 
 Source: [`src/jastrow_pade/value_delta_value.cu`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/jastrow_pade/value_delta_value.cu#L117-L121).
+
+## Kernel layout and formatting
+
+- **Must:** place `__global__` on its own line, directly above the kernel's
+  return type and name.
+- **Must:** name a device kernel `cuda` followed by the operation in
+  `PascalCase`, for example `cudaValue` or `cudaBuildRow`.
+- **Must:** group kernel parameters by role, one group per line: sizes and
+  scalar constants first, input pointers next, output pointers last; keep
+  related pointers on the same line.
+- **Should:** lay out the launch (`<<<...>>>`) argument list in the same grouping
+  as the kernel signature so the call reads as a mirror of the declaration.
+- **Must:** name launch-configuration variables after the kernel with the `cuda`
+  prefix dropped and `Threads` or `Blocks` appended
+  (`cudaUpdateTrigRow` → `updateTrigRowThreads`, `updateTrigRowBlocks`).
+- **Must:** qualify member-function calls inside a member function with `this->`.
+- **Must:** put function attributes and CUDA qualifiers on their own line above
+  the return type.
+
+VMC example — kernel signature, grouped parameters, and namespace layout:
+
+```cpp
+#ifdef VMC_CUDA_BACKEND
+#include <cstddef>
+namespace {
+
+__global__
+void cudaValue(
+  std::size_t num_particles,
+  real_t L, real_t a, real_t b,
+  const real_t* RESTRICT p_x, const real_t* RESTRICT p_y, const real_t* RESTRICT p_z,
+  real_t* RESTRICT jastrow_pade
+) {
+  const std::size_t i{blockIdx.x * blockDim.x + threadIdx.x};
+  if (i >= num_particles) { return; }
+```
+
+Source: [`src/jastrow_pade/value_delta_value.cu`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/jastrow_pade/value_delta_value.cu#L3-L15).
+
+VMC example — launch-configuration naming and a launch that mirrors the
+signature:
+
+```cpp
+dim3 updateTrigRowThreads(256);
+dim3 updateTrigRowBlocks(
+  vmc::cudaNumBlocks(num_k, updateTrigRowThreads.x)
+);
+cudaUpdateTrigRow<<<updateTrigRowBlocks, updateTrigRowThreads>>>(
+  num_k, particle * ROW_STRIDE,
+  particles.pos().x_[particle], particles.pos().y_[particle], particles.pos().z_[particle],
+  this->k_vector().x_, this->k_vector().y_, this->k_vector().z_,
+  this->sin_cache(), this->cos_cache()
+);
+```
+
+Source: [`src/slater_plane_wave/update_restore_trig.cu`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/slater_plane_wave/update_restore_trig.cu#L58-L67).
+
+VMC puts attributes and qualifiers on their own line above the return type:
+
+```cpp
+CUDA_CALLABLE [[nodiscard]]
+inline real_t sqrt(real_t arg) noexcept {
+```
+
+Source: [`src/utilities/math.cuh`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/utilities/math.cuh#L39-L40).
+
+## Minimal kernel arguments
+
+- **Should:** pass a primitive input and derive trivial quantities inside the
+  kernel rather than passing many precomputed values; for example pass
+  `const real_t L` and compute the wrap constants in the kernel.
+- **Should:** pass the single value a kernel needs rather than a full array plus
+  an index when only one element is read.
+- **Should:** keep getter-derived caching on the CPU path; it is evaluated once
+  on the GPU path and only dilutes the kernel.
+
+VMC passes the box length and derives the wrap constants inside the kernel:
+
+```cpp
+  real_t L, real_t a, real_t b,
+  ...
+  const real_t neg_L{-1.0_r * L};
+  const real_t half_L{0.5_r * L};
+  const real_t neg_half_L{-1.0_r * half_L};
+```
+
+Source: [`src/jastrow_pade/value_delta_value.cu`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/jastrow_pade/value_delta_value.cu#L59-L61).
+`cudaUpdateTrigRow` likewise takes the moved particle's position by value rather
+than the whole array:
+[`src/slater_plane_wave/update_restore_trig.cu`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/slater_plane_wave/update_restore_trig.cu#L7-L11).
 
 ## Launches and errors
 
@@ -131,6 +307,11 @@ Source: [`src/utilities/macros.cuh`](https://github.com/UWHPC/Variational-Monte-
 - **May:** mark non-aliasing pointer parameters with a portable `RESTRICT`
   abstraction, but only when the caller satisfies that non-aliasing contract.
 - **Must:** initialize storage before kernels consume it.
+- **Should:** for a single device scalar used as a reduction target, pass the
+  buffer's `[0]` element as the kernel's output pointer and read the result as
+  `*buf[0]`; do not wrap the scalar in extra storage. VMC's checked launch
+  passes `jastrow_pade[0]` and returns `*jastrow_pade[0]`
+  ([`value_delta_value.cu`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/jastrow_pade/value_delta_value.cu#L123-L132)).
 
 VMC routes managed allocation through a backend allocator and owns it through a
 custom `std::unique_ptr` deleter:
@@ -165,6 +346,15 @@ Source: [`src/utilities/aligned_soa.cuh`](https://github.com/UWHPC/Variational-M
 - **Must:** branch on `__CUDA_ARCH__` only for device-compilation behavior, not
   as the project's general “CUDA enabled” switch.
 - **Must:** keep backend wrappers small, inline, and unit-testable on the host.
+- **Must:** do not mark a function `CUDA_CALLABLE` when it calls device-only
+  APIs. `CUDA_CALLABLE` expands to `__host__ __device__`, so split the function
+  with `#if defined(__CUDA_ARCH__)` into a `__device__` body and a host body
+  instead.
+- **Should:** keep `noexcept` on a wrapper that also covers the host path, and
+  remove `noexcept` from a GPU-only function.
+- **Should:** define a trivial special member with `= default` rather than an
+  empty user-provided body; an empty `{}` constructor makes the type
+  non-trivial. Initialize every member when you do so.
 
 VMC's `CUDA_CALLABLE` macro expands to `__host__ __device__` only in a CUDA
 build:
@@ -200,6 +390,21 @@ inline real_t sqrt(real_t arg) noexcept {
 ```
 
 Source: [`src/utilities/math.cuh`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/utilities/math.cuh#L39-L52).
+
+`WalkerRNG` shows the device/host split and the defaulted constructor: its
+member functions that call cuRAND are guarded with `#if defined(__CUDA_ARCH__)`
+and marked `__device__` (no `CUDA_CALLABLE`), and the constructor is
+`= default`:
+
+```cpp
+WalkerRNG() = default;
+
+#if defined(__CUDA_ARCH__)
+[[nodiscard]] __device__
+real_t rand_uniform() {
+```
+
+Source: [`src/utilities/random.cuh`](https://github.com/UWHPC/Variational-Monte-Carlo/blob/main/src/utilities/random.cuh#L28-L49).
 
 ## Numerical modes
 
