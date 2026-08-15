@@ -5,8 +5,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
 export default defineConfig({
-  site: 'https://uwhpc.com',
-  base: '/docs',
+  site: 'https://docs.uwhpc.com',
   markdown: {
     processor: unified({
       remarkPlugins: [remarkMath],
@@ -34,7 +33,7 @@ export default defineConfig({
           attrs: {
             rel: 'apple-touch-icon',
             sizes: '180x180',
-            href: '/docs/apple-touch-icon.png',
+            href: '/apple-touch-icon.png',
           },
         },
       ],
