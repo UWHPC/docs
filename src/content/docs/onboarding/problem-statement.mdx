@@ -5,6 +5,8 @@ sidebar:
   order: 2
 ---
 
+import HeatDiffusion from '../../../components/HeatDiffusion.astro';
+
 ## Overview
 
 You will implement two components of a 2D heat diffusion solver:
@@ -145,37 +147,44 @@ cell) leaking into its neighbors.
   </svg>
 </figure>
 
+Applying that update over and over is the whole simulation. Below, a hot block
+at the centre of a grid spreads into the cells around it as the stencil is
+applied repeatedly:
+
+<HeatDiffusion />
+
 ## Task 1: The Grid Class
 
-Design and implement a `Grid` class that stores a 2D field of `double` values of
-size $N_x \times N_y$. While you may expand as much as you wish, your class must
-satisfy the following interface:
+Design and implement a `Grid` class that stores a 2D field of `double` values
+with `rows` rows and `cols` columns. In the notation above, index `i` selects
+the row and index `j` selects the column.
+
+Both this class and the stencil function go in `src/submission.hpp`, which
+ships with the interface declared and no implementations:
 
 ```cpp
+#pragma once
+
 #include <cstddef>
 
 class Grid {
 private:
-    std::size_t Nx_;
-    std::size_t Ny_;
+  std::size_t rows_;
+  std::size_t cols_;
 
 public:
-    Grid(std::size_t nx, std::size_t ny);
+  Grid(std::size_t rows, std::size_t cols);
 
-    std::size_t Nx() const;
-    std::size_t Ny() const;
-
-    // Element access; implement both overloads.
-    double& operator()(std::size_t i, std::size_t j);       // read/write
-    double  operator()(std::size_t i, std::size_t j) const; // read
+  double& operator()(std::size_t i, std::size_t j);
+  double  operator()(std::size_t i, std::size_t j) const;
 };
 ```
 
 The two `operator()` overloads give read/write and read-only access to the cell
 at row `i`, column `j`. The evaluation harness uses only these overloads to set
 initial conditions and read back your results, so they must work no matter how
-you store the field internally. The implementation of everything else is up to
-you. We want to see how you think and how you approach such problems.
+you store the field internally. Keep this interface; everything else is yours.
+We want to see how you think and how you approach such problems.
 
 **Requirements**:
 
@@ -184,10 +193,19 @@ you. We want to see how you think and how you approach such problems.
 3. You are free to choose the memory layout and overall design of the Grid
    class. Be prepared to discuss your decisions during the interview.
 
+Note that the harness never asks your `Grid` for its dimensions, so no size
+accessors are prescribed. Your stencil will still need the dimensions, which
+makes exposing them part of your design.
+
 ## Task 2: The Stencil Kernel
 
 Implement the function that applies the five-point stencil over all interior grid
-points ($1 \leq i < N_x - 1$, $\; 1 \leq j < N_y - 1$).
+points ($1 \leq i < \text{rows} - 1$, $\; 1 \leq j < \text{cols} - 1$). It is
+declared in the same file:
+
+```cpp
+void apply_stencil(const Grid& old_grid, Grid& new_grid);
+```
 
 Boundary values must remain unchanged. You are not required to implement any
 boundary conditions; simply copy the boundary values from the old grid to the new
@@ -197,15 +215,20 @@ The boundary copy below is illustrative; the interior update is up to you.
 
 ```cpp
 void apply_stencil(const Grid& old_grid, Grid& new_grid) {
+    // The signature carries no dimensions, so your Grid has to make its own
+    // size reachable from here. How you do that is your decision.
+    const std::size_t rows = /* rows in old_grid */;
+    const std::size_t cols = /* columns in old_grid */;
+
     // Copy boundaries
-    for (std::size_t i{}; i < old_grid.Nx(); ++i) {
+    for (std::size_t i{}; i < rows; ++i) {
         new_grid(i, 0) = old_grid(i, 0);
-        new_grid(i, old_grid.Ny() - 1) = old_grid(i, old_grid.Ny() - 1);
+        new_grid(i, cols - 1) = old_grid(i, cols - 1);
     }
 
-    for (std::size_t j{}; j < old_grid.Ny(); ++j) {
+    for (std::size_t j{}; j < cols; ++j) {
         new_grid(0, j) = old_grid(0, j);
-        new_grid(old_grid.Nx() - 1, j) = old_grid(old_grid.Nx() - 1, j);
+        new_grid(rows - 1, j) = old_grid(rows - 1, j);
     }
 
     // Your implementation...
@@ -215,11 +238,13 @@ void apply_stencil(const Grid& old_grid, Grid& new_grid) {
 ## Deliverables
 
 All testing and benchmarking will be performed automatically on team
-infrastructure. Submit a link to a fork of the provided repository containing
-your implementation of:
+infrastructure. Submit a fork of the provided repository containing your
+implementation of both the `Grid` class and `apply_stencil`, in the single file
+`src/submission.hpp`.
 
-1. `grid.hpp` — containing your Grid implementation.
-2. `stencil.cpp` — containing your stencil implementation.
+Everything else in the repository — `bench/`, `CMakeLists.txt`,
+`CMakePresets.json`, and the GitHub Actions workflow — is the evaluation
+harness. Do not edit it.
 
 ## Evaluation
 
@@ -231,14 +256,17 @@ Correctness alone is not sufficient. We expect thoughtful consideration of memor
 layout, performance, and overall design. Applications are reviewed holistically,
 and advancement is not determined solely by benchmark results.
 
-You may use any C++17 or later standard library facilities and introduce
-additional methods, helper functions, or internal data structures as needed.
+**Your submission must be C++17.** The build is pinned to that standard and the
+build configuration is not yours to edit, so anything from a later standard will
+not compile. Within C++17 you may use any standard library facility and add
+whatever methods, helper functions, or internal data structures you need.
 
 ## Submission
 
-After your submission, we will invite you to a short virtual chat to discuss your
-design further. This is solely to get an idea of your thinking and how you
-approach problems.
+Push your changes. A GitHub Action sends the committed version to the UWHPC
+evaluator and reports the result as a commit check. After your submission, we
+will invite you to a short virtual chat to discuss your design further. This is
+solely to get an idea of your thinking and how you approach problems.
 
 ## On Artificial Intelligence
 

@@ -5,7 +5,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
 export default defineConfig({
-  site: 'https://uwhpc.github.io',
+  site: 'https://uwhpc.com',
   base: '/docs',
   markdown: {
     processor: unified({

@@ -6,8 +6,9 @@ sidebar:
 ---
 
 Work from your copy of the
-[UWHPC onboarding template](https://github.com/UWHPC/UWHPC-Onboarding-Template).
-Read its problem statement completely before implementing either component.
+[UWHPC onboarding template](https://github.com/UWHPC/onboarding-template).
+Read the [problem statement](../problem-statement/) completely before
+implementing either component.
 
 :::caution[Keep the implementation yours]
 Do not search for, copy, request, or publish completed implementations. This
@@ -23,8 +24,12 @@ The checked-in build configuration requires:
 - Ninja
 - A compiler with C++17 support
 
-You may use C++17 or later standard-library facilities in the submitted
-components. The harness itself requests C++17.
+:::caution[C++17 only]
+`CMakeLists.txt` sets `CMAKE_CXX_STANDARD 17` with `CMAKE_CXX_STANDARD_REQUIRED
+ON`, and you may not edit it. Your submission must compile as C++17. Facilities
+from C++20 or later are not available to you, and reaching for one is a build
+failure on the evaluator even if your local editor accepts it.
+:::
 
 :::caution[TODO — supported onboarding environment]
 Missing from the repositories: supported operating systems, approved compiler
@@ -34,17 +39,18 @@ and whom to contact for setup problems.
 
 ## Permitted edit scope
 
-Edit only:
+Edit one file: `src/submission.hpp`. Both the `Grid` class and `apply_stencil`
+go there.
 
-- `src/grid.hpp`
-- `src/stencil.cpp`
+Do not edit the benchmark harness (`bench/main.cpp`), `CMakeLists.txt`,
+`CMakePresets.json`, or the GitHub Actions workflow. The evaluator depends on
+the supplied interfaces and harness behavior.
 
-Do not edit the benchmark harness, `CMakeLists.txt`, or `CMakePresets.json`.
-The evaluator depends on the supplied interfaces and harness behavior.
-
-Within the two permitted files, preserve the required `Grid` constructor,
-dimension accessors, and mutable and read-only element access. The full contract
-is stated in the supplied PDF and template README.
+Within that file, preserve the required `Grid` constructor and the mutable and
+read-only element-access overloads. The template ships these declarations
+without implementations, so the project will not link until you supply them.
+The full contract is stated at the top of `src/submission.hpp` and in the
+[problem statement](../problem-statement/).
 
 ## Configure and build
 
@@ -56,8 +62,13 @@ cmake --build --preset benchmark
 ```
 
 The first command configures a Release build with the template's `benchmark`
-preset. The second builds the supplied benchmark target together with your two
-components.
+preset. The second builds the supplied benchmark target, which includes your
+`src/submission.hpp`.
+
+:::caution[Use the presets, not your IDE's CMake integration]
+IDE CMake integrations default to a Debug build. Debug will cost you most of
+your score. Configure and build with the commands above.
+:::
 
 ## Run the correctness test
 
@@ -65,8 +76,23 @@ components.
 ctest --preset benchmark --output-on-failure
 ```
 
-Do not treat a successful compilation as completion. The correctness test must
-pass before submission.
+This runs the benchmark binary's `--check` mode. It steps your implementation
+and an independent reference implementation forward in lockstep, then compares
+the two final fields cell by cell, over three public cases:
+
+| Case | Grid | Steps | Initial condition |
+| --- | --- | --- | --- |
+| `public/square-64` | 64 × 64 | 50 | Center block |
+| `public/nonsquare-96x128` | 96 × 128 | 100 | Linear gradient |
+| `public/square-200` | 200 × 200 | 150 | Center block |
+
+A case passes when the largest absolute difference from the reference is at
+most `1e-6`. Note the non-square case: it will catch a layout that assumes
+rows and columns are interchangeable.
+
+The evaluator runs these same public cases **plus private cases you cannot see
+here**, so passing locally is necessary but not sufficient. Do not treat a
+successful compilation as completion.
 
 ## Run the benchmark
 
@@ -74,28 +100,37 @@ pass before submission.
 ./build/benchmark/uwhpc_benchmark
 ```
 
-The benchmark prints a machine-readable summary containing runtime, memory, and
-score fields. A higher score represents a faster run relative to the harness's
-reference time. Local results can vary by machine; the submitted result is
-evaluated on team infrastructure.
+With no arguments, the binary benchmarks a 1024 × 1024 grid over 200 time steps
+and prints one line of JSON:
+
+```json
+{ "runtime_ms": 148.404, "memory_mb": 16.777, "score": 1.293 }
+```
+
+`score` is the harness's reference time divided by yours, so a higher score is
+a faster run. The reference is deliberately naive — treat it as a floor to
+clear rather than a design to imitate. Local results vary by machine; the
+submitted result is measured on team infrastructure.
 
 ## Completion checklist
 
-- [ ] Only the two permitted source files were changed.
+- [ ] Only `src/submission.hpp` was changed.
 - [ ] The required `Grid` interface is preserved.
 - [ ] Grid values are zero-initialized as required by the problem statement.
 - [ ] Interior values follow the specified five-point update.
 - [ ] Boundary values remain unchanged.
-- [ ] The preset build completes.
-- [ ] The correctness test passes.
+- [ ] The preset build completes in Release, not Debug.
+- [ ] All three public correctness cases pass, including the non-square one.
 - [ ] The benchmark completes and emits its summary.
 - [ ] You can explain your design decisions in your own words.
 
 ## Source of truth
 
-The file scope, requirements, commands, and benchmark interpretation come from
-the
-[template README](https://github.com/UWHPC/UWHPC-Onboarding-Template/blob/main/README.md),
-[`CMakeLists.txt`](https://github.com/UWHPC/UWHPC-Onboarding-Template/blob/main/CMakeLists.txt),
+The file scope, requirements, commands, correctness cases, and benchmark
+interpretation come from the
+[template README](https://github.com/UWHPC/onboarding-template/blob/main/README.md),
+[`src/submission.hpp`](https://github.com/UWHPC/onboarding-template/blob/main/src/submission.hpp),
+[`bench/main.cpp`](https://github.com/UWHPC/onboarding-template/blob/main/bench/main.cpp),
+[`CMakeLists.txt`](https://github.com/UWHPC/onboarding-template/blob/main/CMakeLists.txt),
 and
-[`CMakePresets.json`](https://github.com/UWHPC/UWHPC-Onboarding-Template/blob/main/CMakePresets.json).
+[`CMakePresets.json`](https://github.com/UWHPC/onboarding-template/blob/main/CMakePresets.json).

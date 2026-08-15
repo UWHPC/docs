@@ -25,6 +25,9 @@ You are responsible for:
 2. The stencil operation that advances the interior grid points by one step and
    leaves boundary values unchanged, following the supplied problem statement.
 
+Both go in a single file, `src/submission.hpp`, which ships with the interface
+declared and no implementations.
+
 The template supplies the time integration, boundary setup, initial conditions,
 input/output, correctness test, benchmark, and build configuration. The exercise
 does not require prior thermal-physics knowledge.
@@ -35,7 +38,7 @@ the template.
 ## Onboarding path
 
 1. Obtain your copy of the
-   [UWHPC onboarding template](https://github.com/UWHPC/UWHPC-Onboarding-Template).
+   [UWHPC onboarding template](https://github.com/UWHPC/onboarding-template).
 2. Review the [problem statement](./problem-statement/) and permitted edit scope.
 3. [Implement and validate the exercise](./complete-the-exercise/).
 4. [Submit the result and prepare for the design discussion](./submit-and-discuss/).
@@ -61,9 +64,9 @@ a complete application procedure.
 
 ## Source of truth
 
-Participant instructions come from the
-[template README](https://github.com/UWHPC/UWHPC-Onboarding-Template/blob/main/README.md)
-and the
-[problem statement](https://github.com/UWHPC/UWHPC-Onboarding-Template/blob/main/docs/UWHPC_Onboarding.pdf).
+The [problem statement](./problem-statement/) on this site is canonical; the
+template README points here for it and covers only building and submitting.
+Build and submission instructions come from the
+[template README](https://github.com/UWHPC/onboarding-template/blob/main/README.md).
 If these docs disagree with the assigned template, stop and ask the onboarding
 contact rather than changing the harness.

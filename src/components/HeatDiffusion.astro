@@ -1,0 +1,221 @@
+---
+// Animated five-point-stencil diffusion. Cell opacities are the real field
+// values produced by the stencil in this page's Task 2, run for 32 steps
+// from a hot centre block, sampled every 2 steps and gamma-corrected so
+// the later, lower-amplitude frames stay visible.
+//
+// This figure animates unconditionally: the loop is the explanation, so it is
+// deliberately not suppressed under prefers-reduced-motion.
+---
+
+<figure class="stencil-figure not-content">
+  <svg
+    viewBox="0 0 660 344"
+    xmlns="http://www.w3.org/2000/svg"
+    role="img"
+    aria-labelledby="diffusion-title diffusion-desc"
+  >
+    <title id="diffusion-title">Heat spreading across the grid</title>
+    <desc id="diffusion-desc">
+      An 11 by 11 grid seeded with a hot three-by-three block at its centre.
+      Repeatedly applying the five-point stencil spreads that heat outwards into
+      the surrounding cells, and the peak temperature falls as it does. The
+      outermost ring is boundary and never changes.
+    </desc>
+
+    <g stroke="#1f1f1f" stroke-width="1">
+      <rect x="78" y="29" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="104" y="29" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="130" y="29" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="156" y="29" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="182" y="29" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="208" y="29" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="234" y="29" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="260" y="29" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="286" y="29" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="312" y="29" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="338" y="29" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="78" y="55" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect class="h1" x="104" y="55" width="26" height="26" fill="#d85a30" fill-opacity="0.027" />
+      <rect class="h2" x="130" y="55" width="26" height="26" fill="#d85a30" fill-opacity="0.061" />
+      <rect class="h3" x="156" y="55" width="26" height="26" fill="#d85a30" fill-opacity="0.108" />
+      <rect class="h4" x="182" y="55" width="26" height="26" fill="#d85a30" fill-opacity="0.151" />
+      <rect class="h5" x="208" y="55" width="26" height="26" fill="#d85a30" fill-opacity="0.167" />
+      <rect class="h4" x="234" y="55" width="26" height="26" fill="#d85a30" fill-opacity="0.151" />
+      <rect class="h3" x="260" y="55" width="26" height="26" fill="#d85a30" fill-opacity="0.108" />
+      <rect class="h2" x="286" y="55" width="26" height="26" fill="#d85a30" fill-opacity="0.061" />
+      <rect class="h1" x="312" y="55" width="26" height="26" fill="#d85a30" fill-opacity="0.027" />
+      <rect x="338" y="55" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="78" y="81" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect class="h2" x="104" y="81" width="26" height="26" fill="#d85a30" fill-opacity="0.061" />
+      <rect class="h6" x="130" y="81" width="26" height="26" fill="#d85a30" fill-opacity="0.128" />
+      <rect class="h7" x="156" y="81" width="26" height="26" fill="#d85a30" fill-opacity="0.215" />
+      <rect class="h8" x="182" y="81" width="26" height="26" fill="#d85a30" fill-opacity="0.291" />
+      <rect class="h9" x="208" y="81" width="26" height="26" fill="#d85a30" fill-opacity="0.32" />
+      <rect class="h8" x="234" y="81" width="26" height="26" fill="#d85a30" fill-opacity="0.291" />
+      <rect class="h7" x="260" y="81" width="26" height="26" fill="#d85a30" fill-opacity="0.215" />
+      <rect class="h6" x="286" y="81" width="26" height="26" fill="#d85a30" fill-opacity="0.128" />
+      <rect class="h2" x="312" y="81" width="26" height="26" fill="#d85a30" fill-opacity="0.061" />
+      <rect x="338" y="81" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="78" y="107" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect class="h3" x="104" y="107" width="26" height="26" fill="#d85a30" fill-opacity="0.108" />
+      <rect class="h7" x="130" y="107" width="26" height="26" fill="#d85a30" fill-opacity="0.215" />
+      <rect class="h10" x="156" y="107" width="26" height="26" fill="#d85a30" fill-opacity="0.348" />
+      <rect class="h11" x="182" y="107" width="26" height="26" fill="#d85a30" fill-opacity="0.462" />
+      <rect class="h12" x="208" y="107" width="26" height="26" fill="#d85a30" fill-opacity="0.505" />
+      <rect class="h11" x="234" y="107" width="26" height="26" fill="#d85a30" fill-opacity="0.462" />
+      <rect class="h10" x="260" y="107" width="26" height="26" fill="#d85a30" fill-opacity="0.348" />
+      <rect class="h7" x="286" y="107" width="26" height="26" fill="#d85a30" fill-opacity="0.215" />
+      <rect class="h3" x="312" y="107" width="26" height="26" fill="#d85a30" fill-opacity="0.108" />
+      <rect x="338" y="107" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="78" y="133" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect class="h4" x="104" y="133" width="26" height="26" fill="#d85a30" fill-opacity="0.151" />
+      <rect class="h8" x="130" y="133" width="26" height="26" fill="#d85a30" fill-opacity="0.291" />
+      <rect class="h11" x="156" y="133" width="26" height="26" fill="#d85a30" fill-opacity="0.462" />
+      <rect class="h13" x="182" y="133" width="26" height="26" fill="#d85a30" fill-opacity="0.606" />
+      <rect class="h14" x="208" y="133" width="26" height="26" fill="#d85a30" fill-opacity="0.661" />
+      <rect class="h13" x="234" y="133" width="26" height="26" fill="#d85a30" fill-opacity="0.606" />
+      <rect class="h11" x="260" y="133" width="26" height="26" fill="#d85a30" fill-opacity="0.462" />
+      <rect class="h8" x="286" y="133" width="26" height="26" fill="#d85a30" fill-opacity="0.291" />
+      <rect class="h4" x="312" y="133" width="26" height="26" fill="#d85a30" fill-opacity="0.151" />
+      <rect x="338" y="133" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="78" y="159" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect class="h5" x="104" y="159" width="26" height="26" fill="#d85a30" fill-opacity="0.167" />
+      <rect class="h9" x="130" y="159" width="26" height="26" fill="#d85a30" fill-opacity="0.32" />
+      <rect class="h12" x="156" y="159" width="26" height="26" fill="#d85a30" fill-opacity="0.505" />
+      <rect class="h14" x="182" y="159" width="26" height="26" fill="#d85a30" fill-opacity="0.661" />
+      <rect class="h15" x="208" y="159" width="26" height="26" fill="#d85a30" fill-opacity="0.721" />
+      <rect class="h14" x="234" y="159" width="26" height="26" fill="#d85a30" fill-opacity="0.661" />
+      <rect class="h12" x="260" y="159" width="26" height="26" fill="#d85a30" fill-opacity="0.505" />
+      <rect class="h9" x="286" y="159" width="26" height="26" fill="#d85a30" fill-opacity="0.32" />
+      <rect class="h5" x="312" y="159" width="26" height="26" fill="#d85a30" fill-opacity="0.167" />
+      <rect x="338" y="159" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="78" y="185" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect class="h4" x="104" y="185" width="26" height="26" fill="#d85a30" fill-opacity="0.151" />
+      <rect class="h8" x="130" y="185" width="26" height="26" fill="#d85a30" fill-opacity="0.291" />
+      <rect class="h11" x="156" y="185" width="26" height="26" fill="#d85a30" fill-opacity="0.462" />
+      <rect class="h13" x="182" y="185" width="26" height="26" fill="#d85a30" fill-opacity="0.606" />
+      <rect class="h14" x="208" y="185" width="26" height="26" fill="#d85a30" fill-opacity="0.661" />
+      <rect class="h13" x="234" y="185" width="26" height="26" fill="#d85a30" fill-opacity="0.606" />
+      <rect class="h11" x="260" y="185" width="26" height="26" fill="#d85a30" fill-opacity="0.462" />
+      <rect class="h8" x="286" y="185" width="26" height="26" fill="#d85a30" fill-opacity="0.291" />
+      <rect class="h4" x="312" y="185" width="26" height="26" fill="#d85a30" fill-opacity="0.151" />
+      <rect x="338" y="185" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="78" y="211" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect class="h3" x="104" y="211" width="26" height="26" fill="#d85a30" fill-opacity="0.108" />
+      <rect class="h7" x="130" y="211" width="26" height="26" fill="#d85a30" fill-opacity="0.215" />
+      <rect class="h10" x="156" y="211" width="26" height="26" fill="#d85a30" fill-opacity="0.348" />
+      <rect class="h11" x="182" y="211" width="26" height="26" fill="#d85a30" fill-opacity="0.462" />
+      <rect class="h12" x="208" y="211" width="26" height="26" fill="#d85a30" fill-opacity="0.505" />
+      <rect class="h11" x="234" y="211" width="26" height="26" fill="#d85a30" fill-opacity="0.462" />
+      <rect class="h10" x="260" y="211" width="26" height="26" fill="#d85a30" fill-opacity="0.348" />
+      <rect class="h7" x="286" y="211" width="26" height="26" fill="#d85a30" fill-opacity="0.215" />
+      <rect class="h3" x="312" y="211" width="26" height="26" fill="#d85a30" fill-opacity="0.108" />
+      <rect x="338" y="211" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="78" y="237" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect class="h2" x="104" y="237" width="26" height="26" fill="#d85a30" fill-opacity="0.061" />
+      <rect class="h6" x="130" y="237" width="26" height="26" fill="#d85a30" fill-opacity="0.128" />
+      <rect class="h7" x="156" y="237" width="26" height="26" fill="#d85a30" fill-opacity="0.215" />
+      <rect class="h8" x="182" y="237" width="26" height="26" fill="#d85a30" fill-opacity="0.291" />
+      <rect class="h9" x="208" y="237" width="26" height="26" fill="#d85a30" fill-opacity="0.32" />
+      <rect class="h8" x="234" y="237" width="26" height="26" fill="#d85a30" fill-opacity="0.291" />
+      <rect class="h7" x="260" y="237" width="26" height="26" fill="#d85a30" fill-opacity="0.215" />
+      <rect class="h6" x="286" y="237" width="26" height="26" fill="#d85a30" fill-opacity="0.128" />
+      <rect class="h2" x="312" y="237" width="26" height="26" fill="#d85a30" fill-opacity="0.061" />
+      <rect x="338" y="237" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="78" y="263" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect class="h1" x="104" y="263" width="26" height="26" fill="#d85a30" fill-opacity="0.027" />
+      <rect class="h2" x="130" y="263" width="26" height="26" fill="#d85a30" fill-opacity="0.061" />
+      <rect class="h3" x="156" y="263" width="26" height="26" fill="#d85a30" fill-opacity="0.108" />
+      <rect class="h4" x="182" y="263" width="26" height="26" fill="#d85a30" fill-opacity="0.151" />
+      <rect class="h5" x="208" y="263" width="26" height="26" fill="#d85a30" fill-opacity="0.167" />
+      <rect class="h4" x="234" y="263" width="26" height="26" fill="#d85a30" fill-opacity="0.151" />
+      <rect class="h3" x="260" y="263" width="26" height="26" fill="#d85a30" fill-opacity="0.108" />
+      <rect class="h2" x="286" y="263" width="26" height="26" fill="#d85a30" fill-opacity="0.061" />
+      <rect class="h1" x="312" y="263" width="26" height="26" fill="#d85a30" fill-opacity="0.027" />
+      <rect x="338" y="263" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="78" y="289" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="104" y="289" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="130" y="289" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="156" y="289" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="182" y="289" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="208" y="289" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="234" y="289" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="260" y="289" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="286" y="289" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="312" y="289" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+      <rect x="338" y="289" width="26" height="26" fill="#5b6672" fill-opacity="0.16" />
+    </g>
+
+    <rect
+      x="104" y="55" width="234" height="234"
+      fill="none" stroke="#3b8bd4" stroke-width="1.5"
+      stroke-dasharray="4 3" opacity="0.55"
+    />
+
+    <g
+      fill="#9a9a9a"
+      font-family="'IBM Plex Mono', ui-monospace, monospace"
+      font-size="12.5"
+      dominant-baseline="middle"
+    >
+      <rect x="452" y="124" width="12" height="12" fill="#d85a30" stroke="none" />
+      <text x="474" y="130">hot</text>
+
+      <rect x="452" y="152" width="12" height="12" fill="#d85a30"
+            fill-opacity="0.2" stroke="none" />
+      <text x="474" y="158">cool</text>
+
+      <rect x="452" y="180" width="12" height="12" fill="#5b6672"
+            fill-opacity="0.16" stroke="none" />
+      <text x="474" y="186">boundary</text>
+
+      <line x1="452" y1="214" x2="464" y2="214" stroke="#3b8bd4"
+            stroke-width="1.5" stroke-dasharray="4 3" opacity="0.55" />
+      <text x="474" y="214">interior</text>
+    </g>
+  </svg>
+  <figcaption>
+    The same five-point update applied repeatedly. Heat spreads outward from the
+    centre and the peak falls, because every cell is being averaged with its
+    neighbours. Only the interior is updated; the boundary ring is copied
+    unchanged.
+  </figcaption>
+</figure>
+
+<style>
+    @keyframes h0{0.0%{fill-opacity:0.0}5.375%{fill-opacity:0.0}10.75%{fill-opacity:0.0}16.125%{fill-opacity:0.0}21.5%{fill-opacity:0.0}26.875%{fill-opacity:0.0}32.25%{fill-opacity:0.0}37.625%{fill-opacity:0.0}43.0%{fill-opacity:0.0}48.375%{fill-opacity:0.0}53.75%{fill-opacity:0.0}59.125%{fill-opacity:0.0}64.5%{fill-opacity:0.0}69.875%{fill-opacity:0.0}75.25%{fill-opacity:0.0}80.625%{fill-opacity:0.0}86.0%{fill-opacity:0.0}94.0%{fill-opacity:0.0}100%{fill-opacity:0.0}}
+    @keyframes h1{0.0%{fill-opacity:0.0}5.375%{fill-opacity:0.0}10.75%{fill-opacity:0.0}16.125%{fill-opacity:0.009}21.5%{fill-opacity:0.027}26.875%{fill-opacity:0.045}32.25%{fill-opacity:0.061}37.625%{fill-opacity:0.075}43.0%{fill-opacity:0.086}48.375%{fill-opacity:0.094}53.75%{fill-opacity:0.1}59.125%{fill-opacity:0.105}64.5%{fill-opacity:0.108}69.875%{fill-opacity:0.11}75.25%{fill-opacity:0.11}80.625%{fill-opacity:0.111}86.0%{fill-opacity:0.11}94.0%{fill-opacity:0.11}100%{fill-opacity:0.0}}
+    @keyframes h2{0.0%{fill-opacity:0.0}5.375%{fill-opacity:0.0}10.75%{fill-opacity:0.0}16.125%{fill-opacity:0.032}21.5%{fill-opacity:0.061}26.875%{fill-opacity:0.086}32.25%{fill-opacity:0.106}37.625%{fill-opacity:0.122}43.0%{fill-opacity:0.134}48.375%{fill-opacity:0.142}53.75%{fill-opacity:0.149}59.125%{fill-opacity:0.153}64.5%{fill-opacity:0.155}69.875%{fill-opacity:0.156}75.25%{fill-opacity:0.157}80.625%{fill-opacity:0.156}86.0%{fill-opacity:0.155}94.0%{fill-opacity:0.155}100%{fill-opacity:0.0}}
+    @keyframes h3{0.0%{fill-opacity:0.0}5.375%{fill-opacity:0.0}10.75%{fill-opacity:0.031}16.125%{fill-opacity:0.074}21.5%{fill-opacity:0.108}26.875%{fill-opacity:0.135}32.25%{fill-opacity:0.154}37.625%{fill-opacity:0.168}43.0%{fill-opacity:0.178}48.375%{fill-opacity:0.184}53.75%{fill-opacity:0.189}59.125%{fill-opacity:0.191}64.5%{fill-opacity:0.192}69.875%{fill-opacity:0.191}75.25%{fill-opacity:0.19}80.625%{fill-opacity:0.188}86.0%{fill-opacity:0.185}94.0%{fill-opacity:0.185}100%{fill-opacity:0.0}}
+    @keyframes h4{0.0%{fill-opacity:0.0}5.375%{fill-opacity:0.0}10.75%{fill-opacity:0.072}16.125%{fill-opacity:0.117}21.5%{fill-opacity:0.151}26.875%{fill-opacity:0.175}32.25%{fill-opacity:0.192}37.625%{fill-opacity:0.203}43.0%{fill-opacity:0.211}48.375%{fill-opacity:0.215}53.75%{fill-opacity:0.217}59.125%{fill-opacity:0.217}64.5%{fill-opacity:0.216}69.875%{fill-opacity:0.214}75.25%{fill-opacity:0.211}80.625%{fill-opacity:0.208}86.0%{fill-opacity:0.204}94.0%{fill-opacity:0.204}100%{fill-opacity:0.0}}
+    @keyframes h5{0.0%{fill-opacity:0.0}5.375%{fill-opacity:0.0}10.75%{fill-opacity:0.078}16.125%{fill-opacity:0.131}21.5%{fill-opacity:0.167}26.875%{fill-opacity:0.191}32.25%{fill-opacity:0.207}37.625%{fill-opacity:0.217}43.0%{fill-opacity:0.223}48.375%{fill-opacity:0.226}53.75%{fill-opacity:0.227}59.125%{fill-opacity:0.226}64.5%{fill-opacity:0.224}69.875%{fill-opacity:0.222}75.25%{fill-opacity:0.218}80.625%{fill-opacity:0.215}86.0%{fill-opacity:0.211}94.0%{fill-opacity:0.211}100%{fill-opacity:0.0}}
+    @keyframes h6{0.0%{fill-opacity:0.0}5.375%{fill-opacity:0.0}10.75%{fill-opacity:0.038}16.125%{fill-opacity:0.089}21.5%{fill-opacity:0.128}26.875%{fill-opacity:0.158}32.25%{fill-opacity:0.18}37.625%{fill-opacity:0.195}43.0%{fill-opacity:0.207}48.375%{fill-opacity:0.215}53.75%{fill-opacity:0.22}59.125%{fill-opacity:0.222}64.5%{fill-opacity:0.224}69.875%{fill-opacity:0.223}75.25%{fill-opacity:0.222}80.625%{fill-opacity:0.22}86.0%{fill-opacity:0.217}94.0%{fill-opacity:0.217}100%{fill-opacity:0.0}}
+    @keyframes h7{0.0%{fill-opacity:0.0}5.375%{fill-opacity:0.0}10.75%{fill-opacity:0.119}16.125%{fill-opacity:0.178}21.5%{fill-opacity:0.215}26.875%{fill-opacity:0.24}32.25%{fill-opacity:0.257}37.625%{fill-opacity:0.267}43.0%{fill-opacity:0.274}48.375%{fill-opacity:0.277}53.75%{fill-opacity:0.278}59.125%{fill-opacity:0.277}64.5%{fill-opacity:0.275}69.875%{fill-opacity:0.273}75.25%{fill-opacity:0.269}80.625%{fill-opacity:0.265}86.0%{fill-opacity:0.26}94.0%{fill-opacity:0.26}100%{fill-opacity:0.0}}
+    @keyframes h8{0.0%{fill-opacity:0.0}5.375%{fill-opacity:0.125}10.75%{fill-opacity:0.214}16.125%{fill-opacity:0.263}21.5%{fill-opacity:0.291}26.875%{fill-opacity:0.308}32.25%{fill-opacity:0.317}37.625%{fill-opacity:0.322}43.0%{fill-opacity:0.323}48.375%{fill-opacity:0.321}53.75%{fill-opacity:0.319}59.125%{fill-opacity:0.315}64.5%{fill-opacity:0.31}69.875%{fill-opacity:0.305}75.25%{fill-opacity:0.299}80.625%{fill-opacity:0.293}86.0%{fill-opacity:0.287}94.0%{fill-opacity:0.287}100%{fill-opacity:0.0}}
+    @keyframes h9{0.0%{fill-opacity:0.0}5.375%{fill-opacity:0.125}10.75%{fill-opacity:0.239}16.125%{fill-opacity:0.293}21.5%{fill-opacity:0.32}26.875%{fill-opacity:0.334}32.25%{fill-opacity:0.341}37.625%{fill-opacity:0.342}43.0%{fill-opacity:0.341}48.375%{fill-opacity:0.338}53.75%{fill-opacity:0.333}59.125%{fill-opacity:0.328}64.5%{fill-opacity:0.322}69.875%{fill-opacity:0.316}75.25%{fill-opacity:0.309}80.625%{fill-opacity:0.303}86.0%{fill-opacity:0.296}94.0%{fill-opacity:0.296}100%{fill-opacity:0.0}}
+    @keyframes h10{0.0%{fill-opacity:0.0}5.375%{fill-opacity:0.177}10.75%{fill-opacity:0.282}16.125%{fill-opacity:0.327}21.5%{fill-opacity:0.348}26.875%{fill-opacity:0.358}32.25%{fill-opacity:0.362}37.625%{fill-opacity:0.362}43.0%{fill-opacity:0.36}48.375%{fill-opacity:0.356}53.75%{fill-opacity:0.351}59.125%{fill-opacity:0.345}64.5%{fill-opacity:0.339}69.875%{fill-opacity:0.332}75.25%{fill-opacity:0.326}80.625%{fill-opacity:0.319}86.0%{fill-opacity:0.312}94.0%{fill-opacity:0.312}100%{fill-opacity:0.0}}
+    @keyframes h11{0.0%{fill-opacity:0.0}5.375%{fill-opacity:0.415}10.75%{fill-opacity:0.456}16.125%{fill-opacity:0.464}21.5%{fill-opacity:0.462}26.875%{fill-opacity:0.454}32.25%{fill-opacity:0.445}37.625%{fill-opacity:0.434}43.0%{fill-opacity:0.423}48.375%{fill-opacity:0.412}53.75%{fill-opacity:0.402}59.125%{fill-opacity:0.391}64.5%{fill-opacity:0.381}69.875%{fill-opacity:0.371}75.25%{fill-opacity:0.362}80.625%{fill-opacity:0.353}86.0%{fill-opacity:0.344}94.0%{fill-opacity:0.344}100%{fill-opacity:0.0}}
+    @keyframes h12{0.0%{fill-opacity:0.0}5.375%{fill-opacity:0.451}10.75%{fill-opacity:0.51}16.125%{fill-opacity:0.515}21.5%{fill-opacity:0.505}26.875%{fill-opacity:0.491}32.25%{fill-opacity:0.476}37.625%{fill-opacity:0.461}43.0%{fill-opacity:0.447}48.375%{fill-opacity:0.433}53.75%{fill-opacity:0.42}59.125%{fill-opacity:0.408}64.5%{fill-opacity:0.396}69.875%{fill-opacity:0.385}75.25%{fill-opacity:0.374}80.625%{fill-opacity:0.364}86.0%{fill-opacity:0.355}94.0%{fill-opacity:0.355}100%{fill-opacity:0.0}}
+    @keyframes h13{0.0%{fill-opacity:1.0}5.375%{fill-opacity:0.791}10.75%{fill-opacity:0.702}16.125%{fill-opacity:0.647}21.5%{fill-opacity:0.606}26.875%{fill-opacity:0.572}32.25%{fill-opacity:0.544}37.625%{fill-opacity:0.518}43.0%{fill-opacity:0.496}48.375%{fill-opacity:0.477}53.75%{fill-opacity:0.459}59.125%{fill-opacity:0.443}64.5%{fill-opacity:0.428}69.875%{fill-opacity:0.415}75.25%{fill-opacity:0.402}80.625%{fill-opacity:0.39}86.0%{fill-opacity:0.379}94.0%{fill-opacity:0.379}100%{fill-opacity:1.0}}
+    @keyframes h14{0.0%{fill-opacity:1.0}5.375%{fill-opacity:0.875}10.75%{fill-opacity:0.784}16.125%{fill-opacity:0.715}21.5%{fill-opacity:0.661}26.875%{fill-opacity:0.617}32.25%{fill-opacity:0.581}37.625%{fill-opacity:0.55}43.0%{fill-opacity:0.523}48.375%{fill-opacity:0.5}53.75%{fill-opacity:0.48}59.125%{fill-opacity:0.461}64.5%{fill-opacity:0.445}69.875%{fill-opacity:0.43}75.25%{fill-opacity:0.416}80.625%{fill-opacity:0.403}86.0%{fill-opacity:0.391}94.0%{fill-opacity:0.391}100%{fill-opacity:1.0}}
+    @keyframes h15{0.0%{fill-opacity:1.0}5.375%{fill-opacity:0.968}10.75%{fill-opacity:0.876}16.125%{fill-opacity:0.79}21.5%{fill-opacity:0.721}26.875%{fill-opacity:0.666}32.25%{fill-opacity:0.621}37.625%{fill-opacity:0.583}43.0%{fill-opacity:0.552}48.375%{fill-opacity:0.525}53.75%{fill-opacity:0.501}59.125%{fill-opacity:0.481}64.5%{fill-opacity:0.462}69.875%{fill-opacity:0.445}75.25%{fill-opacity:0.43}80.625%{fill-opacity:0.416}86.0%{fill-opacity:0.403}94.0%{fill-opacity:0.403}100%{fill-opacity:1.0}}
+
+    .h0 { animation: h0 4.5s linear infinite; }
+    .h1 { animation: h1 4.5s linear infinite; }
+    .h2 { animation: h2 4.5s linear infinite; }
+    .h3 { animation: h3 4.5s linear infinite; }
+    .h4 { animation: h4 4.5s linear infinite; }
+    .h5 { animation: h5 4.5s linear infinite; }
+    .h6 { animation: h6 4.5s linear infinite; }
+    .h7 { animation: h7 4.5s linear infinite; }
+    .h8 { animation: h8 4.5s linear infinite; }
+    .h9 { animation: h9 4.5s linear infinite; }
+    .h10 { animation: h10 4.5s linear infinite; }
+    .h11 { animation: h11 4.5s linear infinite; }
+    .h12 { animation: h12 4.5s linear infinite; }
+    .h13 { animation: h13 4.5s linear infinite; }
+    .h14 { animation: h14 4.5s linear infinite; }
+    .h15 { animation: h15 4.5s linear infinite; }
+
+</style>

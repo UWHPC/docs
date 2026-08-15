@@ -10,7 +10,7 @@ in your working copy.
 
 ## Before you push
 
-- Confirm that only `src/grid.hpp` and `src/stencil.cpp` contain your changes.
+- Confirm that only `src/submission.hpp` contains your changes.
 - Confirm that the code is your own work.
 - Remove temporary diagnostics, generated files, and local benchmark artifacts
   from the proposed change.
@@ -19,19 +19,27 @@ in your working copy.
 
 ## Automated evaluation
 
-Push your changes to the repository or fork supplied for your onboarding task.
-The template's GitHub Action sends the committed version to the UWHPC evaluator
-and reports the result as a commit check.
+Push your changes to the repository supplied for your onboarding task. The
+template's GitHub Action runs on every branch, sends the repository and commit
+to the UWHPC evaluator, polls for up to twelve minutes, and reports the result
+as a commit check. The full result JSON is written to the run's step summary.
+
+The check passes only when the evaluator returns `completed`. The other
+terminal states it reports are `failed_build`, `failed_tests`,
+`failed_benchmark`, `timed_out`, and `internal_error` — the first three point
+at your submission, the last two do not.
 
 The public participant instructions do not require you to configure evaluator
 credentials or modify the workflow. If the evaluation check is absent or fails
 for infrastructure reasons, do not alter the harness to bypass it.
 
 :::caution[TODO — official submission procedure]
-Missing from the repositories: where to send the repository link, whether a
-specific branch or commit is required, submission deadlines, expected evaluator
-turnaround, how candidates can distinguish an infrastructure failure from a
-code failure, and the official support contact.
+Missing from the repositories: whether candidates receive a repository inside
+the UWHPC organization or fork to their own account, and if the latter, how the
+workflow is expected to reach its self-hosted `uwhpc` runner and the
+`UWHPC_EVALUATOR_URL` and `UWHPC_EVALUATOR_TOKEN` settings, which a personal
+fork will not have. Also missing: whether a specific branch or commit is
+required, submission deadlines, and the official support contact.
 :::
 
 ## Evaluation criteria
@@ -70,8 +78,9 @@ and defend everything you submit during the discussion.
 
 ## Source of truth
 
-The submission flow, review dimensions, design discussion, and AI guidance come
-from the
-[template README](https://github.com/UWHPC/UWHPC-Onboarding-Template/blob/main/README.md)
-and the
-[onboarding problem statement](https://github.com/UWHPC/UWHPC-Onboarding-Template/blob/main/docs/UWHPC_Onboarding.pdf).
+The submission flow comes from the
+[template README](https://github.com/UWHPC/onboarding-template/blob/main/README.md)
+and its
+[evaluation workflow](https://github.com/UWHPC/onboarding-template/blob/main/.github/workflows/uwhpc-evaluate.yml).
+The review dimensions, design discussion, and AI guidance come from the
+[problem statement](../problem-statement/) on this site.
