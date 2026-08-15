@@ -1,17 +1,27 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import { unified } from '@astrojs/markdown-remark';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 export default defineConfig({
   site: 'https://uwhpc.github.io',
   base: '/docs',
+  markdown: {
+    processor: unified({
+      remarkPlugins: [remarkMath],
+      rehypePlugins: [rehypeKatex],
+    }),
+  },
   integrations: [
     starlight({
       title: 'UWHPC Documentation',
       description: 'User documentation for UWHPC software and workflows.',
       favicon: '/favicon.ico',
       customCss: [
-        '@fontsource-variable/archivo',
-        '@fontsource/fragment-mono',
+        '@fontsource-variable/ibm-plex-sans',
+        '@fontsource/ibm-plex-mono',
+        'katex/dist/katex.min.css',
         './src/styles/custom.css',
       ],
       components: {
@@ -39,12 +49,13 @@ export default defineConfig({
           label: 'Onboarding',
           items: [
             { label: 'Overview', slug: 'onboarding' },
+            { label: 'Problem statement', slug: 'onboarding/problem-statement' },
             { label: 'Complete the exercise', slug: 'onboarding/complete-the-exercise' },
             { label: 'Submit and discuss', slug: 'onboarding/submit-and-discuss' },
           ],
         },
         {
-          label: 'C++ & CUDA Standards',
+          label: 'Standards',
           items: [
             { label: 'Overview', slug: 'cpp-standards' },
             { label: 'C++ coding standard', slug: 'cpp-standards/cpp' },
