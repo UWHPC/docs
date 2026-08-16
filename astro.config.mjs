@@ -16,7 +16,7 @@ export default defineConfig({
     starlight({
       title: 'UWHPC Documentation',
       description: 'User documentation for UWHPC software and workflows.',
-      favicon: '/favicon.ico',
+      favicon: '/favicon.svg',
       customCss: [
         '@fontsource-variable/ibm-plex-sans',
         '@fontsource/ibm-plex-mono',
@@ -28,6 +28,11 @@ export default defineConfig({
       },
       head: [
         { tag: 'meta', attrs: { name: 'theme-color', content: '#111111' } },
+        // Legacy fallback for browsers that ignore the SVG icon.
+        {
+          tag: 'link',
+          attrs: { rel: 'icon', href: '/favicon.ico', sizes: '32x32' },
+        },
         {
           tag: 'link',
           attrs: {
