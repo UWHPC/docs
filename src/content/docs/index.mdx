@@ -1,38 +1,21 @@
 ---
 title: UWHPC Documentation
 description: Documentation for UWHPC software and workflows.
-template: splash
-hero:
-  title: UWHPC Documentation
-  tagline: Build, test, profile, and understand software running on UWHPC.
-  actions:
-    - text: Read the VMC docs
-      link: /software/vmc/
-      icon: right-arrow
-      variant: primary
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { LinkButton } from '@astrojs/starlight/components';
 
-<CardGrid>
-  <Card title="Onboarding" icon="open-book">
-    Complete the UWHPC 2D heat-diffusion exercise, validate it with the provided
-    harness, and prepare for the design discussion.
-    [Start onboarding](/onboarding/).
-  </Card>
-  <Card title="C++ & CUDA standards" icon="seti:cpp">
-    Source-backed coding conventions and review checklists derived from VMC.
-    [Read the standards](/cpp-standards/).
-  </Card>
-  <Card title="Variational Monte Carlo" icon="seti:cpp">
-    Source-backed build, test, profiling, command, output, and architecture
-    documentation for the VMC executable.
-  </Card>
-  <Card title="Expert review" icon="approve-check">
-    A focused checklist collects every statement currently marked as general
-    VMC knowledge or an assumption.
-  </Card>
-</CardGrid>
+<LinkButton href="/onboarding/" icon="right-arrow">Read the docs</LinkButton>
+
+**[Onboarding](/onboarding/)** — the 2D heat-diffusion exercise for prospective
+members: the problem statement, how to build and validate a submission, and what
+the design discussion covers.
+
+**[C++ & CUDA standards](/cpp-standards/)** — the conventions new code is held
+to, and the checklist reviewers work from.
+
+**[Variational Monte Carlo](/software/vmc/)** — building, testing, profiling,
+and the architecture of the VMC executable.
 
 :::caution[Documentation in progress]
 Cluster-wide pages for access, scheduler use, partitions, modules, hardware,

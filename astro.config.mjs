@@ -25,9 +25,16 @@ export default defineConfig({
       ],
       components: {
         SiteTitle: './src/components/UWHPCSiteTitle.astro',
+        SocialIcons: './src/components/HeaderControls.astro',
       },
       head: [
         { tag: 'meta', attrs: { name: 'theme-color', content: '#111111' } },
+        // Restore the collapsed-panel preference before first paint.
+        {
+          tag: 'script',
+          content:
+            "try{if(localStorage.getItem('uwhpc-panels')==='hidden'){document.documentElement.dataset.panels='hidden'}}catch(e){}",
+        },
         // Legacy fallback for browsers that ignore the SVG icon.
         {
           tag: 'link',

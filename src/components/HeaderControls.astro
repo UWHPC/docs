@@ -1,0 +1,71 @@
+---
+// Overrides Starlight's SocialIcons slot so the panel toggle can sit beside the
+// social links in the header. Renders the stock icons unchanged, plus a button
+// that collapses the left nav and the right table of contents together.
+import SocialIcons from '@astrojs/starlight/components/SocialIcons.astro';
+---
+
+<button
+  class="panel-toggle"
+  type="button"
+  aria-pressed="false"
+  title="Toggle side panels"
+>
+  <span class="sr-only">Toggle side panels</span>
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <rect
+      x="1.25"
+      y="2.25"
+      width="13.5"
+      height="11.5"
+      rx="1.5"
+      stroke="currentColor"
+      stroke-width="1.4"></rect>
+    <line
+      class="pane-l"
+      x1="5.75"
+      y1="2.25"
+      x2="5.75"
+      y2="13.75"
+      stroke="currentColor"
+      stroke-width="1.4"></line>
+    <line
+      class="pane-r"
+      x1="10.25"
+      y1="2.25"
+      x2="10.25"
+      y2="13.75"
+      stroke="currentColor"
+      stroke-width="1.4"></line>
+  </svg>
+</button>
+
+<SocialIcons />
+
+<script is:inline>
+  (() => {
+    const root = document.documentElement;
+    const button = document.querySelector('.panel-toggle');
+    if (!button) return;
+
+    const sync = () => {
+      const hidden = root.dataset.panels === 'hidden';
+      button.setAttribute('aria-pressed', hidden ? 'true' : 'false');
+    };
+
+    button.addEventListener('click', () => {
+      const hidden = root.dataset.panels === 'hidden';
+      if (hidden) {
+        delete root.dataset.panels;
+      } else {
+        root.dataset.panels = 'hidden';
+      }
+      try {
+        localStorage.setItem('uwhpc-panels', hidden ? 'shown' : 'hidden');
+      } catch {}
+      sync();
+    });
+
+    sync();
+  })();
+</script>

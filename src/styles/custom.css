@@ -44,8 +44,63 @@
   --sl-font: 'IBM Plex Sans Variable', ui-sans-serif, system-ui, sans-serif;
   --sl-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
   --sl-nav-height: 3.75rem;
+  /* Starlight sizes BOTH side panels from this; 18.75rem made the TOC as wide
+     as the nav, which it never needs to be. */
+  --sl-sidebar-width: 15.5rem;
   --sl-content-width: 48rem;
   --sl-line-height: 1.7;
+}
+
+/* Panel toggle: collapses the nav and the table of contents together. */
+
+.panel-toggle {
+  display: flex;
+  align-items: center;
+  padding: 0.4rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: none;
+  color: var(--uwhpc-ink-faint);
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.panel-toggle:hover {
+  border-color: var(--uwhpc-line-strong);
+  color: var(--uwhpc-ink);
+}
+
+.panel-toggle[aria-pressed='true'] .pane-l,
+.panel-toggle[aria-pressed='true'] .pane-r {
+  opacity: 0.25;
+}
+
+/* The panels only exist at this breakpoint; below it Starlight already
+   collapses them behind its own menu, so the toggle would do nothing. */
+@media (max-width: 71.9375rem) {
+  .panel-toggle {
+    display: none;
+  }
+}
+
+@media (min-width: 50em) {
+  :root[data-panels='hidden'] .sidebar-pane {
+    display: none;
+  }
+
+  :root[data-panels='hidden'] {
+    --sl-content-inline-start: 0;
+  }
+}
+
+@media (min-width: 72rem) {
+  :root[data-panels='hidden'] .right-sidebar-container {
+    display: none;
+  }
+
+  :root[data-panels='hidden'] .main-pane {
+    width: 100%;
+  }
 }
 
 ::selection {
@@ -155,6 +210,21 @@ header.header {
   margin-top: 0;
   padding-top: 0;
   border-top: 0;
+}
+
+/* Heading anchors: smaller icon, more space off the text, muted until hover. */
+.sl-markdown-content .sl-heading-wrapper {
+  --sl-anchor-icon-size: 0.5em;
+  --sl-anchor-icon-gap: 0.55em;
+}
+
+.sl-markdown-content a.sl-anchor-link {
+  color: var(--uwhpc-ink-faint);
+  text-decoration: none;
+}
+
+.sl-markdown-content a.sl-anchor-link:hover {
+  color: var(--uwhpc-accent);
 }
 
 .sl-markdown-content a:not(:where(.not-content *)) {
