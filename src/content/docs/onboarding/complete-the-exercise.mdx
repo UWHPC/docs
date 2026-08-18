@@ -78,13 +78,14 @@ ctest --preset benchmark --output-on-failure
 
 This runs the benchmark binary's `--check` mode. It steps your implementation
 and an independent reference implementation forward in lockstep, then compares
-the two final fields cell by cell, over three public cases:
+the two final fields cell by cell, over four public cases:
 
 | Case | Grid | Steps | Initial condition |
 | --- | --- | --- | --- |
-| `public/square-64` | 64 × 64 | 50 | Center block |
-| `public/nonsquare-96x128` | 96 × 128 | 100 | Linear gradient |
-| `public/square-200` | 200 × 200 | 150 | Center block |
+| `public/square-32` | 32 × 32 | 20 | Center block |
+| `public/nonsquare-48x80` | 48 × 80 | 40 | Linear gradient |
+| `public/checker-64` | 64 × 64 | 30 | Checkerboard |
+| `public/one-step-50` | 50 × 50 | 1 | Center block |
 
 A case passes when the largest absolute difference from the reference is at
 most `1e-6`. Note the non-square case: it will catch a layout that assumes
@@ -120,7 +121,7 @@ submitted result is measured on team infrastructure.
 - [ ] Interior values follow the specified five-point update.
 - [ ] Boundary values remain unchanged.
 - [ ] The preset build completes in Release, not Debug.
-- [ ] All three public correctness cases pass, including the non-square one.
+- [ ] All four public correctness cases pass, including the non-square one.
 - [ ] The benchmark completes and emits its summary.
 - [ ] You can explain your design decisions in your own words.
 

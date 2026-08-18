@@ -25,16 +25,16 @@ export default defineConfig({
       ],
       components: {
         SiteTitle: './src/components/UWHPCSiteTitle.astro',
-        SocialIcons: './src/components/HeaderControls.astro',
       },
       head: [
         { tag: 'meta', attrs: { name: 'theme-color', content: '#111111' } },
-        // Restore the collapsed-panel preference before first paint.
+        // Restore saved panel widths before first paint so they never flash.
         {
           tag: 'script',
           content:
-            "try{if(localStorage.getItem('uwhpc-panels')==='hidden'){document.documentElement.dataset.panels='hidden'}}catch(e){}",
+            "try{var d=document.documentElement.style,n=localStorage.getItem('uwhpc-nav-w'),t=localStorage.getItem('uwhpc-toc-w');if(n!==null)d.setProperty('--uwhpc-nav-w',n+'px');if(t!==null)d.setProperty('--uwhpc-toc-w',t+'px')}catch(e){}",
         },
+        { tag: 'script', attrs: { src: '/panel-resize.js', defer: true } },
         // Legacy fallback for browsers that ignore the SVG icon.
         {
           tag: 'link',

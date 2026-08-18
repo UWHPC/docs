@@ -44,62 +44,153 @@
   --sl-font: 'IBM Plex Sans Variable', ui-sans-serif, system-ui, sans-serif;
   --sl-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
   --sl-nav-height: 3.75rem;
-  /* Starlight sizes BOTH side panels from this; 18.75rem made the TOC as wide
-     as the nav, which it never needs to be. */
+  /* Starlight sizes BOTH side panels from this single value; the two below
+     split it so each panel can be resized independently (see panel-resize.js).
+     The inline head script overwrites them with any saved widths. */
   --sl-sidebar-width: 15.5rem;
+  --uwhpc-nav-w: 15.5rem;
+  --uwhpc-toc-w: 15.5rem;
   --sl-content-width: 48rem;
   --sl-line-height: 1.7;
 }
 
-/* Panel toggle: collapses the nav and the table of contents together. */
+/* Resizable side panels.
 
-.panel-toggle {
+   Starlight drives both panels plus the content offset from one
+   --sl-sidebar-width. These two variables split that so each side can be
+   dragged independently, and replace Starlight's centring math with a plain
+   "content fills what's left" rule. */
+
+.panel-resizer {
+  position: fixed;
+  z-index: 10;
+  top: var(--sl-nav-height);
+  bottom: 0;
   display: flex;
-  align-items: center;
-  padding: 0.4rem;
-  border: 1px solid transparent;
-  border-radius: 2px;
-  background: none;
-  color: var(--uwhpc-ink-faint);
-  cursor: pointer;
-  transition: color 140ms ease, border-color 140ms ease;
+  justify-content: center;
+  width: 13px;
+  padding-top: 1.5rem;
+  cursor: col-resize;
+  touch-action: none;
 }
 
-.panel-toggle:hover {
-  border-color: var(--uwhpc-line-strong);
+.panel-resizer[data-side='start'] {
+  left: var(--uwhpc-nav-w);
+  transform: translateX(-50%);
+}
+
+.panel-resizer[data-side='end'] {
+  right: var(--uwhpc-toc-w);
+  transform: translateX(50%);
+}
+
+.panel-resizer::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  left: 50%;
+  width: 1px;
+  background: var(--uwhpc-line);
+  transform: translateX(-50%);
+  transition: background-color 140ms ease;
+}
+
+.panel-resizer:hover::before,
+.panel-resizer.dragging::before {
+  background: var(--uwhpc-accent);
+}
+
+.panel-collapse {
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  padding: 0;
+  border: 1px solid var(--uwhpc-line-strong);
+  border-radius: 2px;
+  background: var(--uwhpc-bg);
+  color: var(--uwhpc-ink-faint);
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.panel-resizer:hover .panel-collapse,
+.panel-collapse:focus-visible {
+  opacity: 1;
+  border-color: var(--uwhpc-ink-faint);
   color: var(--uwhpc-ink);
 }
 
-.panel-toggle[aria-pressed='true'] .pane-l,
-.panel-toggle[aria-pressed='true'] .pane-r {
-  opacity: 0.25;
+/* Point the chevron the way a click will move the panel. */
+.panel-resizer[data-side='end'] .panel-collapse svg,
+.panel-resizer[data-collapsed='true'][data-side='start'] .panel-collapse svg {
+  transform: rotate(180deg);
 }
 
-/* The panels only exist at this breakpoint; below it Starlight already
-   collapses them behind its own menu, so the toggle would do nothing. */
-@media (max-width: 71.9375rem) {
-  .panel-toggle {
+.panel-resizer[data-collapsed='true'][data-side='end'] .panel-collapse svg {
+  transform: none;
+}
+
+.panel-resizer[data-collapsed='true']::before {
+  background: var(--uwhpc-line-strong);
+}
+
+/* Sit flush against the edge rather than half off-screen when collapsed. */
+.panel-resizer[data-collapsed='true'] {
+  transform: none;
+}
+
+/* A zero-width panel still paints its 1px divider; drop it. */
+:root[data-nav-collapsed='true'] .sidebar-pane {
+  border-inline-end-width: 0;
+}
+
+:root[data-toc-collapsed='true'] .right-sidebar-panel,
+:root[data-toc-collapsed='true'] .right-sidebar {
+  border-inline-start-width: 0;
+}
+
+/* The nav pane only exists from 50rem up. */
+@media (max-width: 49.99rem) {
+  .panel-resizer[data-side='start'] {
     display: none;
   }
 }
 
-@media (min-width: 50em) {
-  :root[data-panels='hidden'] .sidebar-pane {
-    display: none;
+@media (min-width: 50rem) {
+  /* Starlight's own rules carry an Astro scope class (0,2,0), so these need the
+     extra qualifier to win. */
+  :root[data-has-sidebar] .sidebar-pane {
+    width: var(--uwhpc-nav-w);
   }
 
-  :root[data-panels='hidden'] {
-    --sl-content-inline-start: 0;
+  :root[data-has-sidebar] {
+    --sl-content-inline-start: var(--uwhpc-nav-w);
+  }
+
+  .sidebar-pane > * {
+    /* Keep the nav readable rather than reflowing while it is dragged. */
+    min-width: 11rem;
+  }
+}
+
+/* ...and the table of contents from 72rem up. */
+@media (max-width: 71.99rem) {
+  .panel-resizer[data-side='end'] {
+    display: none;
   }
 }
 
 @media (min-width: 72rem) {
-  :root[data-panels='hidden'] .right-sidebar-container {
-    display: none;
+  :root[data-has-sidebar][data-has-toc] .main-pane {
+    width: calc(100% - var(--uwhpc-toc-w));
+    --sl-content-margin-inline: auto;
   }
 
-  :root[data-panels='hidden'] .main-pane {
-    width: 100%;
+  :root[data-has-toc] .right-sidebar-container {
+    width: var(--uwhpc-toc-w);
+    min-width: 0;
   }
 }
 
