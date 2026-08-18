@@ -6,6 +6,9 @@ import rehypeKatex from 'rehype-katex';
 
 export default defineConfig({
   site: 'https://docs.uwhpc.com',
+  redirects: {
+    '/': '/onboarding/',
+  },
   markdown: {
     processor: unified({
       remarkPlugins: [remarkMath],
