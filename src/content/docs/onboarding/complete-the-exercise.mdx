@@ -10,12 +10,6 @@ Work from your copy of the
 Read the [problem statement](../problem-statement/) completely before
 implementing either component.
 
-:::caution[Keep the implementation yours]
-Do not search for, copy, request, or publish completed implementations. This
-page describes the required workflow only; it deliberately provides no
-algorithm, data-layout recommendation, optimization advice, or solution code.
-:::
-
 ## Requirements
 
 The checked-in build configuration requires:
@@ -29,12 +23,6 @@ The checked-in build configuration requires:
 ON`, and you may not edit it. Your submission must compile as C++17. Facilities
 from C++20 or later are not available to you, and reaching for one is a build
 failure on the evaluator even if your local editor accepts it.
-:::
-
-:::caution[TODO — supported onboarding environment]
-Missing from the repositories: supported operating systems, approved compiler
-and Ninja versions, whether a prepared development environment is available,
-and whom to contact for setup problems.
 :::
 
 ## Permitted edit scope
@@ -64,11 +52,6 @@ cmake --build --preset benchmark
 The first command configures a Release build with the template's `benchmark`
 preset. The second builds the supplied benchmark target, which includes your
 `src/submission.hpp`.
-
-:::caution[Use the presets, not your IDE's CMake integration]
-IDE CMake integrations default to a Debug build. Debug will cost you most of
-your score. Configure and build with the commands above.
-:::
 
 ## Run the correctness test
 
@@ -112,26 +95,3 @@ and prints one line of JSON:
 a faster run. The reference is deliberately naive — treat it as a floor to
 clear rather than a design to imitate. Local results vary by machine; the
 submitted result is measured on team infrastructure.
-
-## Completion checklist
-
-- [ ] Only `src/submission.hpp` was changed.
-- [ ] The required `Grid` interface is preserved.
-- [ ] Grid values are zero-initialized as required by the problem statement.
-- [ ] Interior values follow the specified five-point update.
-- [ ] Boundary values remain unchanged.
-- [ ] The preset build completes in Release, not Debug.
-- [ ] All four public correctness cases pass, including the non-square one.
-- [ ] The benchmark completes and emits its summary.
-- [ ] You can explain your design decisions in your own words.
-
-## Source of truth
-
-The file scope, requirements, commands, correctness cases, and benchmark
-interpretation come from the
-[template README](https://github.com/UWHPC/onboarding-template/blob/main/README.md),
-[`src/submission.hpp`](https://github.com/UWHPC/onboarding-template/blob/main/src/submission.hpp),
-[`bench/main.cpp`](https://github.com/UWHPC/onboarding-template/blob/main/bench/main.cpp),
-[`CMakeLists.txt`](https://github.com/UWHPC/onboarding-template/blob/main/CMakeLists.txt),
-and
-[`CMakePresets.json`](https://github.com/UWHPC/onboarding-template/blob/main/CMakePresets.json).

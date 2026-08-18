@@ -49,9 +49,6 @@ export default defineConfig({
           },
         },
       ],
-      editLink: {
-        baseUrl: 'https://github.com/UWHPC/docs/edit/main/',
-      },
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/UWHPC/docs' },
       ],
@@ -65,27 +62,28 @@ export default defineConfig({
             { label: 'Submit and discuss', slug: 'onboarding/submit-and-discuss' },
           ],
         },
-        {
-          label: 'Standards',
-          items: [
-            { label: 'Overview', slug: 'cpp-standards' },
-            { label: 'C++ coding standard', slug: 'cpp-standards/cpp' },
-            { label: 'CUDA coding standard', slug: 'cpp-standards/cuda' },
-            { label: 'Review checklist', slug: 'cpp-standards/review-checklist' },
-          ],
-        },
-        {
-          label: 'VMC',
-          items: [
-            { label: 'Overview', slug: 'software/vmc' },
-            { label: 'Build from source', slug: 'software/vmc/build-from-source' },
-            { label: 'Testing', slug: 'software/vmc/testing' },
-            { label: 'Profiling', slug: 'software/vmc/profiling' },
-            { label: 'CLI reference', slug: 'software/vmc/cli-reference' },
-            { label: 'Program architecture', slug: 'software/vmc/program-architecture' },
-            { label: 'Expert review checklist', slug: 'software/vmc/expert-review-checklist' },
-          ],
-        },
+        // Hidden for now — re-enable when the Standards and VMC docs are ready.
+        // {
+        //   label: 'Standards',
+        //   items: [
+        //     { label: 'Overview', slug: 'cpp-standards' },
+        //     { label: 'C++ coding standard', slug: 'cpp-standards/cpp' },
+        //     { label: 'CUDA coding standard', slug: 'cpp-standards/cuda' },
+        //     { label: 'Review checklist', slug: 'cpp-standards/review-checklist' },
+        //   ],
+        // },
+        // {
+        //   label: 'VMC',
+        //   items: [
+        //     { label: 'Overview', slug: 'software/vmc' },
+        //     { label: 'Build from source', slug: 'software/vmc/build-from-source' },
+        //     { label: 'Testing', slug: 'software/vmc/testing' },
+        //     { label: 'Profiling', slug: 'software/vmc/profiling' },
+        //     { label: 'CLI reference', slug: 'software/vmc/cli-reference' },
+        //     { label: 'Program architecture', slug: 'software/vmc/program-architecture' },
+        //     { label: 'Expert review checklist', slug: 'software/vmc/expert-review-checklist' },
+        //   ],
+        // },
       ],
     }),
   ],
