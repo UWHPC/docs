@@ -181,14 +181,13 @@ The two `operator()` overloads give read/write and read-only access to the cell
 at row `i`, column `j`. The evaluation harness uses only these overloads to set
 initial conditions and read back your results, so they must work no matter how
 you store the field internally. Keep this interface; everything else is yours.
-We want to see how you think and how you approach such problems.
 
 **Requirements**:
 
 1. Default-initialized to zero.
-2. Implement both `operator()` overloads; the evaluation harness relies on them.
+2. Implement both `operator()` overloads.
 3. You are free to choose the memory layout and overall design of the Grid
-   class. Be prepared to discuss your decisions during the interview.
+   class.
 
 Note that the harness never asks your `Grid` for its dimensions, so no size
 accessors are prescribed. Your stencil will still need the dimensions, which
@@ -216,13 +215,10 @@ When it returns, `new_grid` must hold a complete field:
 
 ## Evaluation
 
-Submissions will be evaluated on correctness, implementation quality, design
-decisions, and performance. Performance will be measured using wall clock
-execution time on a team benchmark machine.
-
-Correctness alone is not sufficient. We expect thoughtful consideration of memory
-layout, performance, and overall design. Applications are reviewed holistically,
-and advancement is not determined solely by benchmark results.
+Submissions are evaluated on correctness, implementation quality, design
+decisions, and performance (wall-clock execution time on a team benchmark
+machine). Correctness alone is not sufficient: applications are reviewed
+holistically, and advancement is not determined by benchmark score alone.
 
 **Your submission must be C++17** — see
 [Complete the exercise](../complete-the-exercise/) for the build details. Within
