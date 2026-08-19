@@ -34,11 +34,9 @@ Do not edit the benchmark harness (`bench/main.cpp`), `CMakeLists.txt`,
 `CMakePresets.json`, or the GitHub Actions workflow. The evaluator depends on
 the supplied interfaces and harness behavior.
 
-Within that file, preserve the required `Grid` constructor and the mutable and
-read-only element-access overloads. The template ships these declarations
-without implementations, so the project will not link until you supply them.
-The full contract is stated at the top of `src/submission.hpp` and in the
-[problem statement](../problem-statement/).
+Preserve the declared `Grid` interface — see the
+[problem statement](../problem-statement/). The template ships it without
+implementations, so the project will not link until you supply them.
 
 ## Configure and build
 

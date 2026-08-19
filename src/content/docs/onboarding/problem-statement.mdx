@@ -29,9 +29,8 @@ $$
 \frac{\partial T}{\partial t} \;=\; \alpha \left( \frac{\partial^2 T}{\partial x^2} + \frac{\partial^2 T}{\partial y^2} \right)
 $$
 
-where $T(x,y,t)$ is the temperature and $\alpha$ is a constant. Again, you do not
-need to understand the physics, math, theory, or origin of the equation; this is
-merely for context.
+where $T(x,y,t)$ is the temperature and $\alpha$ is a constant. This is provided
+for context only.
 
 ### Discretization onto a Grid
 
@@ -215,20 +214,6 @@ When it returns, `new_grid` must hold a complete field:
 
 `old_grid` must not be modified.
 
-Note that the signature carries no dimensions, so reaching the grid's size from
-inside this function is part of your design.
-
-## Deliverables
-
-All testing and benchmarking will be performed automatically on team
-infrastructure. Submit a fork of the provided repository containing your
-implementation of both the `Grid` class and `apply_stencil`, in the single file
-`src/submission.hpp`.
-
-Everything else in the repository — `bench/`, `CMakeLists.txt`,
-`CMakePresets.json`, and the GitHub Actions workflow — is the evaluation
-harness. Do not edit it.
-
 ## Evaluation
 
 Submissions will be evaluated on correctness, implementation quality, design
@@ -239,20 +224,33 @@ Correctness alone is not sufficient. We expect thoughtful consideration of memor
 layout, performance, and overall design. Applications are reviewed holistically,
 and advancement is not determined solely by benchmark results.
 
-**Your submission must be C++17.** The build is pinned to that standard and the
-build configuration is not yours to edit, so anything from a later standard will
-not compile. Within C++17 you may use any standard library facility and add
-whatever methods, helper functions, or internal data structures you need.
+**Your submission must be C++17** — see
+[Complete the exercise](../complete-the-exercise/) for the build details. Within
+C++17 you may use any standard library facility and add whatever methods, helper
+functions, or internal data structures you need.
 
 ## Submission
 
 **Fork** the template, implement your solution in `src/submission.hpp`, and open
 a **pull request** against `UWHPC/onboarding-template`. The evaluator runs
-automatically on your pull request and posts a result comment with your build,
-test, and benchmark results. See [Submit and discuss your work](../submit-and-discuss/)
-for the full steps. After your submission, we will invite you to a short virtual
-chat to discuss your design further. This is solely to get an idea of your
-thinking and how you approach problems.
+automatically on your pull request and, within about a minute, posts a result
+comment with your build, test, and benchmark results and your score. A failing
+comment names the *category* of failure (for example, "non-square grids") but
+never the specific hidden case. Push more commits to iterate; the comment
+updates in place and the check turns green once your submission passes.
+
+Your pull request is automatically converted to a **draft** — this is expected.
+Do not merge it; it stays open as your submission record for us to review.
+
+After you submit, join the UWHPC Discord from our
+[contact page](https://www.uwhpc.com/contact) and post in the **onboarding**
+forum channel with your name and a link to your pull request.
+
+We will then invite you to a short virtual chat about your design. Be ready to
+explain how you interpreted the requirements, the design choices you made, how
+you verified correctness and evaluated the result, and the tradeoffs you
+considered. This is a discussion of your own reasoning, not a request for a
+particular implementation.
 
 ## On Artificial Intelligence
 

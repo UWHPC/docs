@@ -62,7 +62,6 @@ export default defineConfig({
             { label: 'Overview', slug: 'onboarding' },
             { label: 'Problem statement', slug: 'onboarding/problem-statement' },
             { label: 'Complete the exercise', slug: 'onboarding/complete-the-exercise' },
-            { label: 'Submit and discuss', slug: 'onboarding/submit-and-discuss' },
           ],
         },
         // Hidden for now — re-enable when the Standards and VMC docs are ready.
