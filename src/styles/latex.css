@@ -1,0 +1,643 @@
+/*!
+ * Ported from LaTeX.css (https://latex.vercel.app/)
+ * Source: https://github.com/vincentdoerig/latex-css
+ * Licensed under MIT (https://github.com/vincentdoerig/latex-css/blob/master/LICENSE)
+ *
+ * This is a direct copy of that project's style.css (v1.14.0), not an
+ * npm install — fonts live in public/fonts/latex-css/ (copied from
+ * that project's own /fonts). Changes from the source are called out
+ * inline with "ADAPTED:":
+ *
+ *  1. Font @font-face URLs point at our local /fonts/latex-css/ path.
+ *  2. Every rule is scoped to the document content itself
+ *     (.sl-markdown-content, and #_top for the page's <h1>) instead
+ *     of applying globally to a classless <body> — the source theme
+ *     assumes it owns the whole page, but Starlight's <body> is the
+ *     app shell (nav, sidebar, search, TOC all live in it too), so an
+ *     unscoped copy re-themed the entire site's UI chrome, not just
+ *     the article content. Scoping keeps nav/sidebar/search on
+ *     Starlight's own default styling.
+ *  3. The document width (80ch) is applied through Starlight's own
+ *     --sl-content-width variable rather than a raw max-width on
+ *     <body>, for the same reason.
+ *  4. Dark mode is wired to Starlight's own data-theme attribute
+ *     instead of the source's manual `.latex-dark` class.
+ *  5. Link color is muted from the source's saturated red
+ *     (hsl(0, 100%, 33%)) to a darker, more restrained maroon, per
+ *     request for an understated look.
+ *
+ * Everything else — fonts, spacing, heading scale, tables, code
+ * blocks, sidenotes, theorems, etc. — is copied unchanged.
+ */
+
+@font-face {
+	font-family: 'Latin Modern';
+	font-style: normal;
+	font-weight: normal;
+	font-display: swap;
+	src: url('/fonts/latex-css/LM-regular.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Latin Modern';
+	font-style: italic;
+	font-weight: normal;
+	font-display: swap;
+	src: url('/fonts/latex-css/LM-italic.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Latin Modern';
+	font-style: normal;
+	font-weight: bold;
+	font-display: swap;
+	src: url('/fonts/latex-css/LM-bold.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Latin Modern';
+	font-style: italic;
+	font-weight: bold;
+	font-display: swap;
+	src: url('/fonts/latex-css/LM-bold-italic.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Libertinus';
+	font-style: normal;
+	font-weight: normal;
+	font-display: swap;
+	src: url('/fonts/latex-css/Libertinus-regular.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Libertinus';
+	font-style: italic;
+	font-weight: normal;
+	font-display: swap;
+	src: url('/fonts/latex-css/Libertinus-italic.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Libertinus';
+	font-style: normal;
+	font-weight: bold;
+	font-display: swap;
+	src: url('/fonts/latex-css/Libertinus-bold.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Libertinus';
+	font-style: italic;
+	font-weight: bold;
+	font-display: swap;
+	src: url('/fonts/latex-css/Libertinus-bold-italic.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Libertinus';
+	font-style: normal;
+	font-weight: 600;
+	font-display: swap;
+	src: url('/fonts/latex-css/Libertinus-semibold.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Libertinus';
+	font-style: italic;
+	font-weight: 600;
+	font-display: swap;
+	src: url('/fonts/latex-css/Libertinus-semibold-italic.woff2') format('woff2');
+}
+
+:root {
+	--body-color: hsl(0, 5%, 10%);
+	/* ADAPTED: muted from the source's hsl(0, 100%, 33%) saturated red
+	   to a darker, more restrained maroon. */
+	--link-visited: hsl(355, 50%, 30%);
+	--link-focus-outline: hsl(220, 90%, 52%);
+	--pre-bg-color: hsl(210, 28%, 93%);
+	--kbd-bg-color: hsl(210, 5%, 100%);
+	--kbd-border-color: hsl(210, 5%, 70%);
+	--table-border-color: black;
+	--border-width-thin: 1.36px;
+	--border-width-thick: 2.27px;
+	--sidenote-target-border-color: hsl(55, 55%, 70%);
+	--footnotes-border-color: hsl(0, 0%, 39%);
+	--text-indent-size: 1.463rem; /* In 12pt [Latin Modern font] LaTeX article
+  \parindent =~ 17.625pt; taking also into account the ratio
+  1pt[LaTeX] = (72 / 72.27) * 1pt[HTML], with default 12pt/1rem LaTeX.css font
+  size, the identation value in rem CSS units is:
+  \parindent =~ 17.625 * (72 / 72.27) / 12 = 1.463rem. */
+
+	/* ADAPTED: the source theme's document measure (80ch), applied
+	   through Starlight's own content-width variable instead of a raw
+	   max-width on <body>, so the sidebar and right-hand TOC keep
+	   working. */
+	--sl-content-width: 80ch;
+}
+
+/* ADAPTED: the source theme toggles dark mode with a `.latex-dark` /
+   `.latex-dark-auto` class added to <html> by the site author.
+   Starlight already has its own light/dark switcher, which instead
+   sets `data-theme="dark"` on <html> — so the same variable values are
+   attached to that attribute instead of introducing a second,
+   unwired toggle mechanism. */
+:root[data-theme='dark'] {
+	--body-color: hsl(0, 0%, 86%);
+	--link-visited: hsl(355, 45%, 72%);
+	--link-focus-outline: hsl(215, 63%, 73%);
+	--pre-bg-color: hsl(0, 1%, 25%);
+	--kbd-bg-color: hsl(0, 0%, 16%);
+	--kbd-border-color: hsl(210, 5%, 70%);
+	--table-border-color: white;
+	--sidenote-target-border-color: hsl(0, 0%, 59%);
+	--footnotes-border-color: hsl(0, 0%, 59%);
+	--proof-symbol-filter: invert(80%);
+}
+
+/* ADAPTED: everything below is scoped to `.sl-markdown-content` (the
+   article body) and `#_top` (the page's <h1>) instead of bare
+   elements, so it only affects document content — not Starlight's
+   nav, sidebar, search, or TOC. */
+
+.sl-markdown-content,
+#_top {
+	font-family: 'Latin Modern', Georgia, Cambria, 'Times New Roman', Times, serif;
+	line-height: 1.8;
+	color: var(--body-color);
+	text-rendering: optimizeLegibility;
+	hyphens: auto;
+	-webkit-hyphens: auto;
+	-moz-hyphens: auto;
+}
+
+.sl-markdown-content.libertinus {
+	font-family: 'Libertinus', Georgia, Cambria, 'Times New Roman', Times, serif;
+}
+
+.sl-markdown-content .text-justify {
+	text-align: justify;
+}
+
+.sl-markdown-content p {
+	margin-top: 1rem;
+}
+
+/* Indents paragraphs like in LaTeX documents */
+.sl-markdown-content.indent-pars p,
+.sl-markdown-content p {
+	text-indent: var(--text-indent-size);
+}
+
+.sl-markdown-content p.no-indent,
+.sl-markdown-content p:first-child {
+	text-indent: 0;
+}
+
+.sl-markdown-content ol p,
+.sl-markdown-content ul p {
+	text-indent: 0;
+}
+
+.sl-markdown-content h2 + p,
+.sl-markdown-content h3 + p,
+.sl-markdown-content h4 + p {
+	text-indent: 0;
+}
+
+.sl-markdown-content a:not([class]) {
+	text-decoration-skip-ink: auto;
+}
+
+.sl-markdown-content a,
+.sl-markdown-content a:visited {
+	color: var(--link-visited);
+}
+
+.sl-markdown-content a:focus {
+	outline-offset: 2px;
+	outline: 2px solid var(--link-focus-outline);
+}
+
+.sl-markdown-content .break-all {
+	word-break: break-all;
+}
+
+.sl-markdown-content img {
+	max-width: 100%;
+	height: auto;
+	display: block;
+}
+
+.sl-markdown-content code,
+.sl-markdown-content pre,
+.sl-markdown-content kbd {
+	font-family: Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+	font-size: 85%;
+	hyphens: none;
+}
+.sl-markdown-content pre {
+	padding: 1rem 1.4rem;
+	max-width: 100%;
+	overflow: auto;
+	border-radius: 4px;
+	background: var(--pre-bg-color);
+}
+.sl-markdown-content pre code {
+	font-size: 95%;
+	position: relative;
+}
+.sl-markdown-content kbd {
+	background: var(--kbd-bg-color);
+	border: 1px solid var(--kbd-border-color);
+	border-radius: 2px;
+	padding: 2px 4px;
+	font-size: 75%;
+}
+
+/* Better tables */
+.sl-markdown-content table:not(.borders-custom) {
+	border-collapse: collapse;
+	border-spacing: 0;
+	width: auto;
+	max-width: 100%;
+	border-top: var(--border-width-thick) solid var(--table-border-color);
+	border-bottom: var(--border-width-thick) solid var(--table-border-color);
+	overflow-x: auto;
+	counter-increment: caption;
+}
+.sl-markdown-content table:not(.borders-custom) tr > th[scope='col'] {
+	border-bottom: var(--border-width-thin) solid var(--table-border-color);
+}
+.sl-markdown-content table:not(.borders-custom) tr > th[scope='row'] {
+	border-right: var(--border-width-thin) solid var(--table-border-color);
+}
+.sl-markdown-content table:not(.borders-custom) > tbody > tr:first-child > td,
+.sl-markdown-content table:not(.borders-custom) > tbody > tr:first-child > th {
+	border-top: var(--border-width-thin) solid var(--table-border-color);
+}
+.sl-markdown-content table:not(.borders-custom) > tbody > tr:last-child > td,
+.sl-markdown-content table:not(.borders-custom) > tbody > tr:last-child > th {
+	border-bottom: var(--border-width-thin) solid var(--table-border-color);
+}
+
+.sl-markdown-content th,
+.sl-markdown-content td {
+	text-align: left;
+	padding: 0.5rem;
+	line-height: 1.1;
+}
+.sl-markdown-content caption {
+	text-align: left;
+	font-size: 0.923em;
+	padding: 0 0.25em 0.25em;
+	width: 100%;
+	margin-left: 0;
+}
+.sl-markdown-content caption::before {
+	content: 'Table ' counter(caption) '. ';
+	font-weight: bold;
+}
+
+.sl-markdown-content .scroll-wrapper {
+	overflow-x: auto;
+}
+.sl-markdown-content .scroll-wrapper > table td {
+	white-space: nowrap;
+}
+
+.sl-markdown-content table.borders-custom {
+	border-collapse: collapse;
+	border-spacing: 0;
+	width: auto;
+	max-width: 100%;
+	overflow-x: auto;
+	counter-increment: caption;
+}
+
+.sl-markdown-content .border-top-thick {
+	border-top: var(--border-width-thick) solid var(--table-border-color);
+}
+.sl-markdown-content .border-right-thick {
+	border-right: var(--border-width-thick) solid var(--table-border-color);
+}
+.sl-markdown-content .border-bottom-thick {
+	border-bottom: var(--border-width-thick) solid var(--table-border-color);
+}
+.sl-markdown-content .border-left-thick {
+	border-left: var(--border-width-thick) solid var(--table-border-color);
+}
+.sl-markdown-content .border-top-thin {
+	border-top: var(--border-width-thin) solid var(--table-border-color);
+}
+.sl-markdown-content .border-right-thin {
+	border-right: var(--border-width-thin) solid var(--table-border-color);
+}
+.sl-markdown-content .border-bottom-thin {
+	border-bottom: var(--border-width-thin) solid var(--table-border-color);
+}
+.sl-markdown-content .border-left-thin {
+	border-left: var(--border-width-thin) solid var(--table-border-color);
+}
+
+/* Table column alignment */
+.sl-markdown-content .col-1-l tr > :nth-child(1),
+.sl-markdown-content .col-2-l tr > :nth-child(2),
+.sl-markdown-content .col-3-l tr > :nth-child(3),
+.sl-markdown-content .col-4-l tr > :nth-child(4),
+.sl-markdown-content .col-5-l tr > :nth-child(5),
+.sl-markdown-content .col-6-l tr > :nth-child(6) {
+	text-align: left;
+}
+.sl-markdown-content .col-1-c tr > :nth-child(1),
+.sl-markdown-content .col-2-c tr > :nth-child(2),
+.sl-markdown-content .col-3-c tr > :nth-child(3),
+.sl-markdown-content .col-4-c tr > :nth-child(4),
+.sl-markdown-content .col-5-c tr > :nth-child(5),
+.sl-markdown-content .col-6-c tr > :nth-child(6) {
+	text-align: center;
+}
+.sl-markdown-content .col-1-r tr > :nth-child(1),
+.sl-markdown-content .col-2-r tr > :nth-child(2),
+.sl-markdown-content .col-3-r tr > :nth-child(3),
+.sl-markdown-content .col-4-r tr > :nth-child(4),
+.sl-markdown-content .col-5-r tr > :nth-child(5),
+.sl-markdown-content .col-6-r tr > :nth-child(6) {
+	text-align: right;
+}
+
+/* Format figure captions (based on table captions) */
+.sl-markdown-content figure {
+	counter-increment: figcaption;
+}
+.sl-markdown-content figcaption {
+	text-align: left;
+	font-size: 0.923em;
+	padding: 0.25em 0.25em 0;
+	width: 100%;
+	margin-left: 0;
+}
+.sl-markdown-content figcaption::before {
+	content: 'Figure ' counter(figcaption) '. ';
+	font-weight: bold;
+}
+
+/* Center align the title */
+#_top {
+	text-align: center;
+}
+
+/* Nested ordered list for a hand-authored ToC inside content */
+.sl-markdown-content nav ol {
+	counter-reset: item;
+	padding-left: 2rem;
+}
+.sl-markdown-content nav ol > li {
+	display: block;
+}
+.sl-markdown-content nav ol > li::before {
+	content: counters(item, '.') ' ';
+	counter-increment: item;
+	padding-right: 0.85rem;
+}
+
+/* Center definitions (most useful for display equations) */
+.sl-markdown-content dl dd {
+	text-align: center;
+}
+
+/* Theorem / Lemma / Proof / Definition */
+.sl-markdown-content .theorem {
+	counter-increment: theorem;
+	display: block;
+	margin: 12px 0;
+	font-style: italic;
+}
+.sl-markdown-content .theorem::before {
+	content: 'Theorem ' counter(theorem) '. ';
+	font-weight: bold;
+	font-style: normal;
+}
+.sl-markdown-content .lemma {
+	counter-increment: theorem;
+	display: block;
+	margin: 12px 0;
+	font-style: italic;
+}
+.sl-markdown-content .lemma::before {
+	content: 'Lemma ' counter(theorem) '. ';
+	font-weight: bold;
+	font-style: normal;
+}
+.sl-markdown-content .proof {
+	display: block;
+	margin: 12px 0;
+	font-style: normal;
+	position: relative;
+}
+.sl-markdown-content .proof::before {
+	content: 'Proof. ' attr(title);
+	font-style: italic;
+}
+.sl-markdown-content .proof::after {
+	content: '◾️';
+	filter: var(--proof-symbol-filter);
+	position: absolute;
+	right: -12px;
+	bottom: -2px;
+}
+.sl-markdown-content .definition {
+	counter-increment: definition;
+	display: block;
+	margin: 12px 0;
+	font-style: normal;
+}
+.sl-markdown-content .definition::before {
+	content: 'Definition ' counter(definition) '. ';
+	font-weight: bold;
+	font-style: normal;
+}
+
+/* Center align author name, use small caps and add vertical spacing */
+.sl-markdown-content .author {
+	margin: 0.85rem 0;
+	font-variant-caps: small-caps;
+	text-align: center;
+}
+
+/* Sidenotes */
+.sl-markdown-content .sidenote {
+	font-size: 0.8rem;
+	float: right;
+	clear: right;
+	width: 18vw;
+	margin-right: -20vw;
+	margin-bottom: 1em;
+	text-indent: 0;
+	text-align: left;
+}
+.sl-markdown-content .sidenote.left {
+	float: left;
+	margin-left: -20vw;
+	margin-bottom: 1em;
+	text-indent: 0;
+	text-align: right;
+}
+.sl-markdown-content.text-justify .sidenote,
+.sl-markdown-content.text-justify .sidenote.left {
+	text-align: justify;
+}
+.sl-markdown-content .sidenote:target {
+	border: var(--sidenote-target-border-color) 1.5px solid;
+	padding: 0 0.5rem;
+	scroll-margin-block-start: 10rem;
+}
+.sl-markdown-content .sidenote-number {
+	counter-increment: sidenote-counter;
+}
+.sl-markdown-content .sidenote-number::after,
+.sl-markdown-content .sidenote::before {
+	position: relative;
+	vertical-align: baseline;
+}
+.sl-markdown-content .sidenote-number::after {
+	content: counter(sidenote-counter);
+	font-size: 0.7rem;
+	top: -0.5rem;
+	left: 0.1rem;
+}
+.sl-markdown-content .sidenote-number ~ .sidenote::before {
+	content: counter(sidenote-counter) ' ';
+	font-size: 0.7rem;
+	top: -0.5rem;
+}
+.sl-markdown-content label.sidenote-toggle:not(.sidenote-number) {
+	display: none;
+}
+.sl-markdown-content blockquote .sidenote {
+	margin-right: -24vw;
+	width: 18vw;
+}
+.sl-markdown-content label.sidenote-toggle {
+	display: inline;
+	cursor: pointer;
+}
+.sl-markdown-content input.sidenote-toggle {
+	display: none;
+}
+@media (max-width: 1050px) {
+	.sl-markdown-content label.sidenote-toggle:not(.sidenote-number) {
+		display: inline;
+	}
+	.sl-markdown-content .sidenote {
+		display: none;
+	}
+	.sl-markdown-content .sidenote-toggle:checked + .sidenote {
+		display: block;
+		margin: 0.5rem 1.25rem 1rem 0.5rem;
+		float: left;
+		left: 1rem;
+		clear: both;
+		width: 95%;
+	}
+	.sl-markdown-content .sidenote-toggle:checked + .sidenote.left {
+		text-align: left;
+	}
+	.sl-markdown-content.text-justify .sidenote-toggle:checked + .sidenote.left {
+		text-align: justify;
+	}
+	.sl-markdown-content blockquote .sidenote {
+		margin-right: -25vw;
+		width: 16vw;
+	}
+}
+
+/* Footnotes */
+.sl-markdown-content .footnotes p {
+	line-height: 1.5;
+	font-size: 85%;
+	margin-bottom: 0.4rem;
+}
+.sl-markdown-content .footnotes {
+	border-top: 1px solid var(--footnotes-border-color);
+}
+
+/* Abstract */
+.sl-markdown-content .abstract,
+.sl-markdown-content .abstract p {
+	text-align: center;
+	margin-top: 0;
+}
+.sl-markdown-content .abstract {
+	margin: 2.25rem 0;
+}
+.sl-markdown-content .abstract > h2 {
+	font-size: 1rem;
+	margin-bottom: -0.2rem;
+}
+
+/* LaTeX logo formatting */
+.sl-markdown-content .latex span:nth-child(1) {
+	text-transform: uppercase;
+	font-size: 0.75em;
+	vertical-align: 0.28em;
+	margin-left: -0.48em;
+	margin-right: -0.15em;
+	line-height: 1ex;
+}
+.sl-markdown-content .latex span:nth-child(2) {
+	text-transform: uppercase;
+	vertical-align: -0.5ex;
+	margin-left: -0.1667em;
+	margin-right: -0.125em;
+	line-height: 1ex;
+}
+
+.sl-markdown-content .whitespace-nowrap {
+	white-space: nowrap;
+}
+
+/* Heading typography */
+#_top {
+	font-size: 2.5rem;
+	line-height: 3.25rem;
+	margin-bottom: 1.625rem;
+}
+.sl-markdown-content h2 {
+	font-size: 1.7rem;
+	line-height: 2rem;
+	margin-top: 3rem;
+}
+.sl-markdown-content h3 {
+	font-size: 1.4rem;
+	margin-top: 2.5rem;
+}
+.sl-markdown-content h4 {
+	font-size: 1.2rem;
+	margin-top: 2rem;
+}
+.sl-markdown-content h5 {
+	font-size: 1rem;
+	margin-top: 1.8rem;
+}
+.sl-markdown-content h6 {
+	font-size: 1rem;
+	font-style: italic;
+	font-weight: normal;
+	margin-top: 2.5rem;
+}
+.sl-markdown-content :is(h3, h4, h5, h6) {
+	line-height: 1.625rem;
+}
+.sl-markdown-content h2 + h3,
+.sl-markdown-content h3 + h4,
+.sl-markdown-content h4 + h5 {
+	margin-top: 0.8rem;
+}
+.sl-markdown-content h5 + h6 {
+	margin-top: -0.8rem;
+}
+.sl-markdown-content :is(h2, h3, h4, h5, h6) {
+	margin-bottom: 0.8rem;
+}
