@@ -643,10 +643,28 @@
 }
 
 /* KaTeX display equations can be wider than the content column (long
-   derivations, the boxed result). Scroll horizontally within the
-   equation itself instead of overflowing/clipping the page. */
+   derivations, the boxed result). Shrink them slightly so most fit
+   without any scrolling; on the rare equation still too wide for a
+   narrow viewport, still allow horizontal scroll/swipe so nothing is
+   lost, but without showing a scrollbar. */
 .sl-markdown-content .katex-display {
+	font-size: 0.9em;
 	overflow-x: auto;
 	overflow-y: hidden;
 	padding-block: 0.25rem;
+	scrollbar-width: none;
+}
+.sl-markdown-content .katex-display::-webkit-scrollbar {
+	display: none;
+}
+
+/* ADAPTED: not from the source theme — balances the right-hand "On
+   this page" TOC panel with the left sidebar's width. Starlight's own
+   layout gives the TOC whatever space is left over after the content
+   column, which is a lot of extra space since our content measure
+   (80ch) is narrower than Starlight's own default. */
+@media (min-width: 72rem) {
+	.right-sidebar-container {
+		width: var(--sl-sidebar-width);
+	}
 }
