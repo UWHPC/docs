@@ -1,0 +1,173 @@
+---
+title: Onboarding Problem
+description: 2D Heat Diffusion on a Uniform Grid
+sidebar:
+  order: 2
+---
+
+## Overview
+
+You will implement two components of a 2D heat diffusion solver:
+
+1. A **grid class** that stores the 2D temperature field in memory.
+2. The **stencil kernel** that advances the simulation by one time step.
+
+Everything else, i.e., the time integrator, boundary conditions, initial
+conditions, and I/O, is provided. You DO NOT need to know any thermal physics or
+theory.
+
+## The Math
+
+### The Governing Heat Equation
+
+Heat spreads across a 2D surface according to the following Partial Differential
+Equation:
+
+$$
+\frac{\partial T}{\partial t} \;=\; \alpha \left( \frac{\partial^2 T}{\partial x^2} + \frac{\partial^2 T}{\partial y^2} \right)
+$$
+
+where $T(x,y,t)$ is the temperature and $\alpha$ is a constant. This is provided
+for context only.
+
+### Discretization onto a Grid
+
+Replace the continuous derivatives with finite differences:
+
+$$
+T_{t+1}(i,j) = T_t(i,j) + \Delta t \cdot \alpha \!\left( \frac{T_t(i{+}1,j) - 2T_t(i,j) + T_t(i{-}1,j)}{\Delta x^2} + \frac{T_t(i,j{+}1) - 2T_t(i,j) + T_t(i,j{-}1)}{\Delta y^2} \right)
+$$
+
+### Given Constants
+
+With constants $\alpha$, $\Delta x$, $\Delta y$, and $\Delta t$ chosen for
+stability, the equation simplifies to the following:
+
+$$
+\boxed{\;T_{t+1}(i,j) \;=\; 0.5 \cdot T_t(i,j) \;+\; 0.125 \cdot \bigl( T_t(i{-}1,j) + T_t(i{+}1,j) + T_t(i,j{-}1) + T_t(i,j{+}1) \bigr)\;}
+$$
+
+### Converting Equations to Code
+
+Notice how this is just a weighted average. In code, the above could look
+something like this:
+
+```cpp
+new_arr[i][j] = 0.5   * old_arr[i][j] +
+                0.125 * (old_arr[i-1][j] + old_arr[i+1][j] +
+                         old_arr[i][j-1] + old_arr[i][j+1]);
+```
+
+### The Five-Point Stencil
+
+Picture the heat from each grid cell leaking into its four neighbors: the cell
+at `(i,j)` keeps half its own value and picks up an eighth from each of the
+cells above, below, to the left, and to the right of it — which is exactly the
+weighted average written above. Applying that update over and over, across the
+whole grid, is the entire simulation.
+
+## Task 1: The Grid Class
+
+Design and implement a `Grid` class that stores a 2D field of `double` values
+with `rows` rows and `cols` columns. In the notation above, index `i` selects
+the row and index `j` selects the column.
+
+Both this class and the stencil function go in `src/submission.hpp`, which
+ships with the interface declared and no implementations:
+
+```cpp
+#pragma once
+
+#include <cstddef>
+
+class Grid {
+private:
+  std::size_t rows_;
+  std::size_t cols_;
+
+public:
+  Grid(std::size_t rows, std::size_t cols);
+
+  double& operator()(std::size_t i, std::size_t j);
+  double  operator()(std::size_t i, std::size_t j) const;
+};
+```
+
+The two `operator()` overloads give read/write and read-only access to the cell
+at row `i`, column `j`. The evaluation harness uses only these overloads to set
+initial conditions and read back your results, so they must work no matter how
+you store the field internally. Keep this interface; everything else is yours.
+
+**Requirements**:
+
+1. Default-initialized to zero.
+2. Implement both `operator()` overloads.
+3. You are free to choose the memory layout and overall design of the Grid
+   class.
+
+Note that the harness never asks your `Grid` for its dimensions, so no size
+accessors are prescribed. Your stencil will still need the dimensions, which
+makes exposing them part of your design.
+
+## Task 2: The Stencil Kernel
+
+Implement the function that applies the five-point stencil over all interior grid
+points ($1 \leq i < \text{rows} - 1$, $\; 1 \leq j < \text{cols} - 1$). It is
+declared in the same file:
+
+```cpp
+void apply_stencil(const Grid& old_grid, Grid& new_grid);
+```
+
+When it returns, `new_grid` must hold a complete field:
+
+1. Every interior point is the weighted average given above, computed from
+   `old_grid`.
+2. Every boundary point — the outermost row and column on each side — is copied
+   from `old_grid` unchanged. You are not required to implement any boundary
+   conditions.
+
+`old_grid` must not be modified.
+
+## Evaluation
+
+Submissions are evaluated on correctness, implementation quality, design
+decisions, and performance (wall-clock execution time on a team benchmark
+machine). Correctness alone is not sufficient: applications are reviewed
+holistically, and advancement is not determined by benchmark score alone.
+
+**Your submission must be C++17** — see
+[Complete the exercise](../complete-the-exercise/) for the build details. Within
+C++17 you may use any standard library facility and add whatever methods, helper
+functions, or internal data structures you need.
+
+## Submission
+
+**Fork** the template, implement your solution in `src/submission.hpp`, and open
+a **pull request** against `UWHPC/onboarding-template`. The evaluator runs
+automatically on your pull request and, within about a minute, posts a result
+comment with your build, test, and benchmark results and your score. A failing
+comment names the *category* of failure (for example, "non-square grids") but
+never the specific hidden case. Push more commits to iterate; the comment
+updates in place and the check turns green once your submission passes.
+
+Your pull request is automatically converted to a **draft** — this is expected.
+Do not merge it; it stays open as your submission record for us to review.
+
+After you submit, join the UWHPC Discord from our
+[contact page](https://www.uwhpc.com/contact) and post in the **onboarding**
+forum channel with your name and a link to your pull request.
+
+We will then invite you to a short virtual chat about your design. Be ready to
+explain how you interpreted the requirements, the design choices you made, how
+you verified correctness and evaluated the result, and the tradeoffs you
+considered. This is a discussion of your own reasoning, not a request for a
+particular implementation.
+
+## On Artificial Intelligence
+
+We encourage using AI to learn and explore ideas. That said, your submission
+should be your own work; copy-pasting from AI will be obvious, especially during
+the chat.
+
+Good luck.

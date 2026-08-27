@@ -1,0 +1,41 @@
+---
+title: UWHPC onboarding
+description: Start the UWHPC 2D heat-diffusion onboarding exercise.
+sidebar:
+  order: 1
+---
+
+:::danger[Fill out the onboarding form first]
+Before anything else, complete the
+**[onboarding form](https://forms.gle/FDeKAW5H6j1qNtJL9)**. Your submission will
+not be considered until the form is done.
+:::
+
+:::tip[Join the Discord]
+Join the UWHPC Discord from our [contact page](https://www.uwhpc.com/contact).
+Onboarding happens there, and it's where you'll post your final submission.
+:::
+
+The UWHPC onboarding exercise is a small C++ performance task built around a 2D
+heat-diffusion stencil. You implement two focused components, validate them with
+the supplied harness, submit your work for automated evaluation, and discuss
+your design in a short virtual chat.
+
+## What you implement
+
+You are responsible for:
+
+1. A `Grid` class that stores a two-dimensional field of `double` values and
+   preserves the interface required by the evaluation harness.
+2. The stencil operation that advances the interior grid points by one step and
+   leaves boundary values unchanged, following the supplied problem statement.
+
+Both go in a single file, `src/submission.hpp`, which ships with the interface
+declared and no implementations.
+
+The template supplies the time integration, boundary setup, initial conditions,
+input/output, correctness test, benchmark, and build configuration. The exercise
+does not require prior thermal-physics knowledge.
+
+Read the full [onboarding problem statement](./problem-statement/) before editing
+the template.

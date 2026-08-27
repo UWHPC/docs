@@ -641,3 +641,12 @@
 .sl-markdown-content :is(h2, h3, h4, h5, h6) {
 	margin-bottom: 0.8rem;
 }
+
+/* KaTeX display equations can be wider than the content column (long
+   derivations, the boxed result). Scroll horizontally within the
+   equation itself instead of overflowing/clipping the page. */
+.sl-markdown-content .katex-display {
+	overflow-x: auto;
+	overflow-y: hidden;
+	padding-block: 0.25rem;
+}

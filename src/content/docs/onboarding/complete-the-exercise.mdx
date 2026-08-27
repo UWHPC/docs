@@ -1,0 +1,95 @@
+---
+title: Complete the onboarding exercise
+description: Set up, implement, build, test, and benchmark the UWHPC onboarding template.
+sidebar:
+  order: 3
+---
+
+Work from your copy of the
+[UWHPC onboarding template](https://github.com/UWHPC/onboarding-template).
+Read the [problem statement](../problem-statement/) completely before
+implementing either component.
+
+## Requirements
+
+The checked-in build configuration requires:
+
+- CMake 3.21 or newer
+- Ninja
+- A compiler with C++17 support
+
+:::caution[C++17 only]
+`CMakeLists.txt` sets `CMAKE_CXX_STANDARD 17` with `CMAKE_CXX_STANDARD_REQUIRED
+ON`, and you may not edit it. Your submission must compile as C++17. Facilities
+from C++20 or later are not available to you, and reaching for one is a build
+failure on the evaluator even if your local editor accepts it.
+:::
+
+## Permitted edit scope
+
+Edit one file: `src/submission.hpp`. Both the `Grid` class and `apply_stencil`
+go there.
+
+Do not edit the benchmark harness (`bench/main.cpp`), `CMakeLists.txt`,
+`CMakePresets.json`, or the GitHub Actions workflow. The evaluator depends on
+the supplied interfaces and harness behavior.
+
+Preserve the declared `Grid` interface — see the
+[problem statement](../problem-statement/). The template ships it without
+implementations, so the project will not link until you supply them.
+
+## Configure and build
+
+Run these commands from the template repository root:
+
+```bash
+cmake --preset benchmark
+cmake --build --preset benchmark
+```
+
+The first command configures a Release build with the template's `benchmark`
+preset. The second builds the supplied benchmark target, which includes your
+`src/submission.hpp`.
+
+## Run the correctness test
+
+```bash
+ctest --preset benchmark --output-on-failure
+```
+
+This runs the benchmark binary's `--check` mode. It steps your implementation
+and an independent reference implementation forward in lockstep, then compares
+the two final fields cell by cell, over four public cases:
+
+| Case | Grid | Steps | Initial condition |
+| --- | --- | --- | --- |
+| `public/square-32` | 32 × 32 | 20 | Center block |
+| `public/nonsquare-48x80` | 48 × 80 | 40 | Linear gradient |
+| `public/checker-64` | 64 × 64 | 30 | Checkerboard |
+| `public/one-step-50` | 50 × 50 | 1 | Center block |
+
+A case passes when the largest absolute difference from the reference is at
+most `1e-6`. Note the non-square case: it will catch a layout that assumes
+rows and columns are interchangeable.
+
+The evaluator runs these same public cases **plus private cases you cannot see
+here**, so passing locally is necessary but not sufficient. Do not treat a
+successful compilation as completion.
+
+## Run the benchmark
+
+```bash
+./build/benchmark/uwhpc_benchmark
+```
+
+With no arguments, the binary benchmarks a 1024 × 1024 grid over 200 time steps
+and prints one line of JSON:
+
+```json
+{ "runtime_ms": 148.404, "memory_mb": 16.777, "score": 1.293 }
+```
+
+`score` is the harness's reference time divided by yours, so a higher score is
+a faster run. The reference is deliberately naive — treat it as a floor to
+clear rather than a design to imitate. Local results vary by machine; the
+submitted result is measured on team infrastructure.
