@@ -59,7 +59,7 @@ ctest --preset benchmark --output-on-failure
 
 This runs the benchmark binary's `--check` mode. It steps your implementation
 and an independent reference implementation forward in lockstep, then compares
-the two final fields cell by cell, over four public cases:
+the two final fields cell by cell, over five public cases:
 
 | Case | Grid | Steps | Initial condition |
 | --- | --- | --- | --- |
@@ -67,6 +67,7 @@ the two final fields cell by cell, over four public cases:
 | `public/nonsquare-48x80` | 48 × 80 | 40 | Linear gradient |
 | `public/checker-64` | 64 × 64 | 30 | Checkerboard |
 | `public/one-step-50` | 50 × 50 | 1 | Center block |
+| `public/nonsquare-boundary-80x50` | 80 × 50 | 10 | Linear gradient |
 
 A case passes when the largest absolute difference from the reference is at
 most `1e-6`. Note the non-square case: it will catch a layout that assumes
@@ -75,6 +76,21 @@ rows and columns are interchangeable.
 The evaluator runs these same public cases **plus private cases you cannot see
 here**, so passing locally is necessary but not sufficient. Do not treat a
 successful compilation as completion.
+
+## Review the design
+
+Before benchmarking, use the
+[performance design checklist](../performance-design/#submission-checklist).
+In particular, be ready to explain:
+
+- how logical columns map to physical memory and whether row starts meet the
+  alignment required by the vectorized loop;
+- where ownership lives and how the kernel receives non-owning access;
+- why any non-aliasing assertion is valid;
+- how the inner loop vectorizes and how remaining elements are handled;
+- how parallel work is divided without creating workers on every time step;
+- why abstractions in the hot path compile away; and
+- how allocation, boundary handling, and computation are separated.
 
 ## Run the benchmark
 
@@ -93,3 +109,8 @@ and prints one line of JSON:
 a faster run. The reference is deliberately naive — treat it as a floor to
 clear rather than a design to imitate. Local results vary by machine; the
 submitted result is measured on team infrastructure.
+
+Run the benchmark several times and compare distributions, not one favorable
+measurement. Change one design decision at a time so you can explain which
+change affected performance. A fast result does not make undefined behavior,
+an invalid aliasing promise, or unsafe resource ownership acceptable.

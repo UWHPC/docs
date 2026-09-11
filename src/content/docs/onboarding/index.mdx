@@ -16,6 +16,15 @@ Join the UWHPC Discord from our [contact page](https://www.uwhpc.com/contact).
 Onboarding happens there, and it's where you'll post your final submission.
 :::
 
+:::note[Updated performance expectations]
+If you already opened a submission, review the new
+[performance design guide](./performance-design/) before your virtual chat. We
+are looking for deliberate decisions about aligned and padded memory, SIMD,
+aliasing, OpenMP, ownership versus access, zero-cost abstraction, and code
+architecture. A passing evaluator result or a high score does not replace that
+reasoning.
+:::
+
 The UWHPC onboarding exercise is a small C++ performance task built around a 2D
 heat-diffusion stencil. You implement two focused components, validate them with
 the supplied harness, submit your work for automated evaluation, and discuss
@@ -37,5 +46,5 @@ The template supplies the time integration, boundary setup, initial conditions,
 input/output, correctness test, benchmark, and build configuration. The exercise
 does not require prior thermal-physics knowledge.
 
-Read the full [onboarding problem statement](./problem-statement/) before editing
-the template.
+Read the full [onboarding problem statement](./problem-statement/) and
+[performance design guide](./performance-design/) before editing the template.
