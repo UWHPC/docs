@@ -70,27 +70,13 @@ the two final fields cell by cell, over five public cases:
 | `public/nonsquare-boundary-80x50` | 80 × 50 | 10 | Linear gradient |
 
 A case passes when the largest absolute difference from the reference is at
-most `1e-6`. Note the non-square case: it will catch a layout that assumes
-rows and columns are interchangeable.
+most `1e-6`. Note the non-square cases: they will catch a layout that assumes
+rows and columns are interchangeable, and one that confuses the width of a row
+with the distance between rows.
 
 The evaluator runs these same public cases **plus private cases you cannot see
 here**, so passing locally is necessary but not sufficient. Do not treat a
 successful compilation as completion.
-
-## Review the design
-
-Before benchmarking, use the
-[performance design checklist](../performance-design/#submission-checklist).
-In particular, be ready to explain:
-
-- how logical columns map to physical memory and whether row starts meet the
-  alignment required by the vectorized loop;
-- where ownership lives and how the kernel receives non-owning access;
-- why any non-aliasing assertion is valid;
-- how the inner loop vectorizes and how remaining elements are handled;
-- how parallel work is divided without creating workers on every time step;
-- why abstractions in the hot path compile away; and
-- how allocation, boundary handling, and computation are separated.
 
 ## Run the benchmark
 

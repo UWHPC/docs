@@ -1,192 +1,169 @@
 ---
 title: Performance design guide
-description: Design expectations for memory layout, SIMD, aliasing, parallelism, ownership, and architecture.
+description: "Where to look to improve your design: memory layout, SIMD, aliasing, parallelism, ownership, and architecture."
 sidebar:
   order: 3
 ---
 
-The onboarding exercise evaluates how you reason about performance-oriented C++,
-not only whether you reproduce the stencil formula. A strong submission makes
-the machine-level requirements explicit while keeping ownership and control flow
-easy to audit.
+We evaluate how you reason about performance-oriented C++, not just whether you
+reproduced the stencil formula.
 
-This page gives design constraints and review questions. It intentionally does
-not prescribe one implementation.
+This is a guide to what to look into once your code is correct: where the
+performance in this problem lives, and what to examine in your own design to find
+it. It is not a reference implementation. Following it is not the point; being
+able to account for what you chose is. A submission that departs from this guide
+for a reason reads better than one that follows it without one.
 
 ## Start from the data path
 
-The benchmark repeatedly reads one grid and writes another. Each output row is
-independent, and adjacent output columns use adjacent input values. Design the
-storage and access path around that fact before adding threads or explicit SIMD.
+The benchmark reads one grid and writes another, over and over. Every output row
+is independent, and neighboring output columns read neighboring input values.
+Threads and explicit SIMD both build on top of the storage and access path, so
+what you decide there bounds what either can do later.
 
-A useful order of work is:
-
-1. Establish a correct contiguous layout and a serial baseline.
-2. Make alignment, stride, and non-aliasing contracts explicit.
-3. Verify that the inner loop vectorizes.
-4. Parallelize across independent rows.
-5. Measure each change and keep only changes you can justify.
+A workable order: a correct serial baseline; then alignment, stride and aliasing
+made explicit; then a vectorized inner loop; then parallelism across rows. If
+something got faster and you cannot say why, you do not yet know whether it holds
+on another machine.
 
 ## Memory layout, alignment, and padding
 
-A flat contiguous allocation is preferable to separately allocated rows. It
-reduces indirection, gives the inner loop unit-stride access, and makes the
-physical layout visible to the kernel.
+One flat allocation removes indirection, gives the inner loop unit-stride access,
+and makes the layout visible to the kernel. Separately allocated rows give up all
+three.
 
-Logical width and physical stride are different concepts. `cols` is the number
-of values a caller may address. The stride is the number of stored elements
-between the starts of adjacent rows. Rounding the stride up to a whole SIMD or
-cache-line unit can ensure that every row begins at the desired alignment. A
-single aligned base pointer does not guarantee aligned later rows when
+Width and stride are not the same thing. `cols` is what a caller may address; the
+stride is how many stored elements separate the starts of adjacent rows. Round
+the stride up to a whole SIMD or cache-line unit and every row begins where you
+intend. An aligned base pointer alone will not do that when
 `cols * sizeof(double)` is not a multiple of the alignment.
 
-Treat padded elements as storage only. They are not part of the logical grid,
-must not change boundary semantics, and should not leak through the public
-indexing interface.
+Two things worth checking rather than assuming: what the benchmark's
+1024-element row does to an unpadded stride, and what alignment your allocation
+actually has.
 
-If you implement aligned allocation yourself:
+Padded elements are storage only. They sit outside the logical grid, so anything
+that lets them reach boundary behavior or the indexing interface changes results
+rather than just layout.
 
-- pair the allocation and deallocation mechanisms exactly;
-- satisfy the allocation API's size and alignment preconditions;
-- preserve zero initialization;
-- handle allocation failure through normal C++ semantics; and
-- make the owning type safe under its declared copy and move operations.
-
-Prefer RAII over a raw owning pointer. Allocation policy belongs with the owner,
-not in the stencil kernel.
+Rolling your own aligned allocation means pairing allocation and deallocation
+exactly, meeting the API's size and alignment preconditions, preserving zero
+initialization, handling failure normally, and keeping the owning type safe under
+copy and move. A raw owning pointer leaves every one of those to you on every
+exit path, which is the problem RAII exists to solve.
 
 ## Ownership and views
 
-`Grid` should own the allocation and its lifetime. Kernel code only needs
-non-owning access to an existing grid. Separate these roles.
+`Grid` owns the allocation and its lifetime; the kernel only needs access to it.
+A view is a small value type holding a pointer plus the metadata to interpret it,
+meaning logical dimensions and physical stride, in distinct mutable and read-only
+forms. One that allocates or copies elements when it is created has stopped being
+a view, and the cost lands in the hot path.
 
-A useful view is a small value type containing a pointer and the metadata needed
-to interpret it, such as logical dimensions and physical stride. Provide
-distinct mutable and read-only access. Creating or copying a view should not
-allocate, copy grid elements, or transfer ownership.
+That split is what makes the contracts readable: who deallocates, which side is
+writable, and who keeps the storage alive for the call.
 
-This separation makes the important contracts visible:
+Notice that `rows` and `cols` never travel apart here, and neither do the grid
+and its stride. What does that say about where they belong? And how much of your
+design would change if the field were three-dimensional?
 
-- the owner controls lifetime and deallocation;
-- the view describes access and layout;
-- the input view is read-only;
-- the output view is writable; and
-- the caller keeps both owners alive for the duration of the kernel.
-
-Do not store benchmark policy such as thread counts or row partitions in
-`Grid`. Those choices concern execution, not ownership of a two-dimensional
-field.
+Thread counts and row partitions describe how the work runs rather than who owns
+the field. Keeping them in `Grid` ties the two together, so changing either one
+means touching the other.
 
 ## Pointer aliasing
 
-The exercise guarantees that the input and output `Grid` objects passed to
-`apply_stencil` are distinct and their storage does not overlap. C++ references
-alone do not necessarily communicate that fact to the optimizer.
+A C++ reference tells the optimizer nothing about whether two grids occupy
+disjoint storage. Read the harness; work out whether they actually do, and what
+the compiler does to your inner loop while it cannot assume so.
 
-If you use a compiler-specific restrict qualifier or an OpenMP SIMD clause,
-apply it at a narrow kernel boundary where the promise is true and reviewable.
-Do not scatter restrict-qualified pointers throughout the program. Declaring
-two pointers non-aliasing is a correctness contract, not a performance hint that
-may be added speculatively. Violating it produces undefined behavior.
+A narrow kernel boundary is where a restrict qualifier or an OpenMP SIMD clause
+is both true and checkable by a reader. Spread further out, it becomes a promise
+nobody can audit. It is a correctness contract rather than a performance hint:
+break it and you have undefined behavior, and nothing will tell you. Worth asking
+what your kernel would do if it were handed the same grid twice.
 
-Row pointers derived from one input allocation may overlap in the language's
-alias analysis even when they address different offsets. Be precise about which
-pointers are restricted and what each one may access.
+Which pointers you restrict, and what each may touch, is worth being exact about.
+Row pointers taken from one allocation can still alias as far as the language is
+concerned, even at different offsets.
 
 ## SIMD and vectorization
 
-The column loop is the natural SIMD loop because consecutive iterations access
-consecutive values. Keep it simple enough for the compiler to analyze:
+The column loop is the natural SIMD loop; consecutive iterations touch
+consecutive values. What keeps it analyzable: contiguous dimension innermost, row
+bases derived outside it, no opaque calls or per-element metadata work, the
+alignment and aliasing facts you established made visible, and a scalar remainder
+when the interior width is not a whole vector length.
 
-- traverse the contiguous dimension in the inner loop;
-- derive row bases outside that loop;
-- avoid opaque calls or repeated metadata work per element;
-- communicate valid alignment and aliasing facts; and
-- preserve a correct scalar remainder when the interior width is not a whole
-  vector length.
+`#pragma omp simd` asks for vectorization. It will not fix an unfriendly layout,
+and it will not make a false dependency promise true. Aligned loads are only
+valid at addresses that really are aligned; since the left and right neighbor
+streams sit one element apart, not every load here shares an alignment. Which of
+your five streams are aligned, and which are not?
 
-`#pragma omp simd` asks the compiler to vectorize, but it does not repair an
-unfriendly layout or make a false dependency promise valid. Likewise, aligned
-loads are only valid at addresses that actually meet their stated alignment.
-The left and right neighbor streams are offset by one element, so not every load
-in this stencil has the same alignment.
+The vectorization report and the generated assembly are what settle this. A
+pragma in the source is no evidence that vector instructions came out, and the
+report says why whenever the compiler declines.
 
-Explicit intrinsics or experimental SIMD types can reduce portability and add
-tail-handling complexity. Use them only if measurement shows that the compiler's
-vectorized scalar loop is insufficient and the C++17 evaluator supports the
-chosen facility.
-
-Check the compiler's vectorization report or generated assembly. A pragma in the
-source is not evidence that useful vector instructions were emitted.
+Intrinsics and experimental SIMD types cost portability and add tail handling.
+They earn that when measurement says the compiler's output is not enough and the
+C++17 evaluator supports what you pick.
 
 ## OpenMP and parallelization
 
-Parallelize independent output rows with static work distribution. Each worker
-may read any input row but must write only its assigned output rows. Keep
-boundary writes outside the parallel region or assign them so that no two
-workers can write the same location.
+Independent output rows split cleanly across workers under static scheduling. A
+worker may read any input row, but two workers writing the same cell is a race
+whatever else is true, so boundary writes either sit outside the parallel region
+or get assigned like any other row.
 
-The evaluator enables OpenMP. A local compiler may build the same pragmas as a
-serial program when OpenMP is unavailable, so confirm that your local build
-actually found OpenMP before drawing scaling conclusions.
+The benchmark calls the stencil 200 times, so anything you build per call you
+build 200 times; constructing and joining `std::thread` objects inside it is paid
+at that rate. OpenMP already handles pooling, scheduling and thread count, and
+replacing it means taking those on. Nested parallelism and dynamic scheduling
+each cost something, and with uniform rows there is little for the latter to
+recover.
 
-Avoid constructing and joining a new set of `std::thread` objects on every call.
-The benchmark invokes the stencil 200 times, so repeated worker creation can
-dominate useful work. Also avoid nested parallelism and dynamic scheduling for
-uniform rows unless measurements demonstrate a benefit.
+Thread count belongs to the machine rather than the submission, so a hardcoded
+one behaves differently everywhere except where it was chosen. A local build that
+did not find OpenMP compiles the same pragmas serially, which makes any scaling
+conclusion drawn from it meaningless.
 
-Parallel speedup is bounded by memory bandwidth and runtime overhead. Compare a
-serial vectorized version against the parallel version. More threads are not
-automatically faster.
+Speedup here is capped by memory bandwidth, not arithmetic. Comparing a serial
+vectorized version against the parallel one shows where extra threads stop
+paying. It is lower than most people expect, and knowing roughly where it lands
+says more than the thread count you settled on.
 
 ## Zero-cost abstraction
 
-Abstraction is useful when it exposes contracts without adding work to the hot
-path. Small accessors, views, and row helpers should be defined where the
-compiler can inline them. After optimization, they should reduce to pointer
-arithmetic and loads or stores.
+Abstraction earns its place when it makes contracts visible without adding work
+to the hot path. Accessors, views and row helpers sitting where the compiler can
+inline them should come out of optimization as pointer arithmetic and loads or
+stores.
 
-Avoid designs that perform allocation, bounds discovery, virtual dispatch, or
-container copying during an element update. Avoid recomputing views and layout
-metadata for every cell when they can be created once per call or once per row.
+That is a claim about generated code, not about how short the source reads.
+Building both forms and comparing the output settles it, and if they differ, the
+interesting question is what the compiler could not see through.
 
-Use generated assembly, optimization remarks, or a profiler to validate the
-cost model. "Zero cost" is a claim about optimized output, not about how short
-the source looks.
+Allocation, bounds discovery, virtual dispatch and container copying inside an
+element update are paid once per cell, as is rebuilding views or layout metadata
+that could have been made once per call or once per row.
 
 ## Code architecture
 
-Keep responsibilities narrow:
+Responsibilities are easier to follow when they stay narrow: the owning grid
+handles allocation, dimensions, stride and lifetime; views give non-owning
+access; boundary handling preserves the problem contract; the interior kernel
+does the numeric work; parallel orchestration divides it. Helpers that hide data
+movement make those phases harder to inspect rather than easier.
 
-- the owning grid manages allocation, dimensions, stride, and lifetime;
-- views represent non-owning mutable or read-only access;
-- boundary handling preserves the problem contract;
-- the interior kernel performs numeric work; and
-- parallel orchestration partitions independent work.
+A good test: how much of the file would you touch to change one decision, say the
+memory layout or the work distribution? If the answer is most of it, the phases
+are less separate than they look.
 
-Helpers should make those phases easier to inspect without hiding data movement
-or creating work. Since the submission is a header, definitions with external
-linkage must also be safe if the header is included by more than one translation
-unit.
+The submission is a header, so anything with external linkage has to stay safe
+when more than one translation unit includes it. Commented-out experiments and
+debugging leftovers read as noise in a file we are reviewing for its design.
 
-Delete commented-out experiments and debugging artifacts. Do not modify the
-benchmark, build files, workflow, or repository metadata to improve a reported
-score.
-
-## Submission checklist
-
-- [ ] The logical shape is distinct from the padded physical stride.
-- [ ] The base allocation and every claimed row alignment are valid.
-- [ ] Allocation and deallocation match, and ownership is managed with RAII.
-- [ ] Mutable and read-only views do not own or copy the grid.
-- [ ] Any non-aliasing qualifier states a contract guaranteed by the caller.
-- [ ] The inner loop uses unit-stride accesses and has correct remainder handling.
-- [ ] Compiler output confirms vectorization rather than only containing a pragma.
-- [ ] Parallel workers write disjoint output regions.
-- [ ] The hot path does not create threads or allocate memory on each time step.
-- [ ] Boundary cells remain unchanged for square and non-square grids.
-- [ ] Hot-path abstractions inline to the expected pointer arithmetic.
-- [ ] The implementation separates storage, access, boundary work, computation,
-  and parallel orchestration.
-- [ ] Correctness tests pass and repeated benchmark runs support each performance
-  claim.
+Comments that record why the code is the way it is, rather than what it does, are
+the ones worth having. The chat asks you to defend these decisions out loud, and
+writing them down is where you find out whether you can.

@@ -213,11 +213,6 @@ When it returns, `new_grid` must hold a complete field:
 
 `old_grid` must not be modified.
 
-The harness passes two distinct `Grid` objects to `apply_stencil`. Their storage
-does not overlap. You may rely on that non-aliasing contract when designing the
-kernel, but your implementation must make the contract visible to the compiler
-before using an aliasing-related optimization.
-
 ## Evaluation
 
 Submissions are evaluated on correctness, implementation quality, design
@@ -225,10 +220,10 @@ decisions, and performance (wall-clock execution time on a team benchmark
 machine). Correctness alone is not sufficient: applications are reviewed
 holistically, and advancement is not determined by benchmark score alone.
 
-Before implementing, read the [performance design guide](../performance-design/).
-It explains the memory, vectorization, parallelism, ownership, and architecture
-decisions we expect you to consider. The guide describes the engineering
-contracts, not a reference implementation.
+Clearing the score threshold means your code compiles, is correct, and runs at a
+reasonable speed. It is a floor, not a target. Once you are past it, the
+[performance design guide](../performance-design/) covers where to look to
+improve your design.
 
 **Your submission must be C++17** — see
 [Complete the exercise](../complete-the-exercise/) for the build details. Within
