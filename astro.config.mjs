@@ -61,6 +61,7 @@ export default defineConfig({
           items: [
             { label: 'Overview', slug: 'onboarding' },
             { label: 'Problem statement', slug: 'onboarding/problem-statement' },
+            { label: 'Performance design guide', slug: 'onboarding/performance-design' },
             { label: 'Complete the exercise', slug: 'onboarding/complete-the-exercise' },
           ],
         },
